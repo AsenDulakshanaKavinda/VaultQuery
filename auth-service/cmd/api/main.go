@@ -42,7 +42,7 @@ func main() {
 	publicRoutes := r.Group("/api/v1/auth")
 	{
 		publicRoutes.POST("/register", authHandler.Register)
-		// publicRoutes.POST("/login", authHandler.Login)
+		publicRoutes.POST("/login", authHandler.Login)
 	}
 
 	// PROTECTED ROUTES (Requires Token)

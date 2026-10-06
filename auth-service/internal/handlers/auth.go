@@ -60,3 +60,42 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	})
 
 }
+
+// Login verifies user credentials and returns a JWT token
+func (h *AuthHandler) Login(c *gin.Context) {
+	var req models.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid username or password format"})
+		return
+	}
+
+	user, err := h.userStore.GetUserByEmail(req.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+		return
+	}
+	if user == nil {
+		// return generic error to prevent user enumeration attacks
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+		return
+	}
+
+	if !(services.CheckPasswordHash(req.Password, user.HashedPassword)) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
+		return
+	}
+
+	token, expiresIn, err := services.GenerateToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate authentication token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.TokenResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   expiresIn,
+	})
+
+}

@@ -3,5 +3,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 export default function ProtectedRoute({ children }) {
   const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
+  // If not logged in, redirect to /login
+  if (!user && !token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 }

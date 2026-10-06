@@ -35,11 +35,11 @@ export default function Dashboard() {
             <dl>
               <div>
                 <dt>Name</dt>
-                <dd>{user.name}</dd>
+                <dd>{user?.name || "N/A"}</dd>
               </div>
               <div>
                 <dt>Email</dt>
-                <dd>{user.email}</dd>
+                <dd>{user?.email || "N/A"}</dd>
               </div>
             </dl>
           </section>
