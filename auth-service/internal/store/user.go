@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+
 )
 
 type User struct {
@@ -49,10 +50,10 @@ func (s *UserStore) CreateUser(u *User) error {
 
 
 
-// GetUserByID fetches a single user by ID
+// GetUserByID fetches a single user by Email
 func (s *UserStore) GetUserByEmail(email string) (*User, error) {
 	query := `
-		SELECT user_id, username, role, hashed_password, organization, created_at, status
+		SELECT user_id, username, email, role, hashed_password, organization, created_at, status
 		FROM users
 		WHERE email = $1 AND status = 'active';`
 
@@ -60,6 +61,7 @@ func (s *UserStore) GetUserByEmail(email string) (*User, error) {
 	err := s.db.QueryRow(query, email).Scan(
 		&u.UserID,
 		&u.Username,
+		&u.Email,
 		&u.Role,
 		&u.HashedPassword,
 		&u.Organization,
@@ -74,4 +76,28 @@ func (s *UserStore) GetUserByEmail(email string) (*User, error) {
 	return u, nil
 }
 
+// GetUserByID fetches a single user by ID
+func (s *UserStore) GetUserByID(id string) (*User, error) {
+	query := `
+		SELECT user_id, username, email, role, hashed_password, organization, created_at, status
+		FROM users
+		WHERE user_id = $1 AND status = 'active';`
 
+	u := &User{}
+	err := s.db.QueryRow(query, id).Scan(
+		&u.UserID,
+		&u.Username,
+		&u.Email,
+		&u.Role,
+		&u.HashedPassword,
+		&u.Organization,
+		&u.CreatedAt,
+		&u.Status,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil // user not found or inactive
+	} else if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	return u, nil
+}

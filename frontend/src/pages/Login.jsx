@@ -39,7 +39,8 @@ export default function Login() {
       if (!res.ok) {
         throw new Error(data.message || data.error || "Failed to login.");
       }
-      login(data)
+      // Pass token first, then user data
+      login(data.access_token, data.user);
       navigate("/", {replace: true})
     } catch (err) {
       setError(err.message || "Could not log in. Check your details and try again.");

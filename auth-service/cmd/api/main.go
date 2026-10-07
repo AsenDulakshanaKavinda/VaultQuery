@@ -1,24 +1,31 @@
 package main
 
 import (
+	"AuthService/internal/config"
 	"AuthService/internal/handlers"
+	"AuthService/internal/middleware"
 	"AuthService/internal/store"
+	"fmt"
 	"log"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	err := godotenv.Load()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Printf("Warning: %v\n", err)
+	}
+
+	settings := config.LoadSettings()
+
 	if err != nil {
 		log.Println("Warning: Error loading .env file, reading from environment")
 	}
 
-	connStr := os.Getenv("DATABASE_URL")
+	connStr := settings.DatabaseURL
 	dbInstance, err := store.GetDB(connStr)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
@@ -32,7 +39,7 @@ func main() {
 
 	// Enable CORS for React frontend (Vite port 5173 / CRA port 3000)
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5174", "http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -46,15 +53,17 @@ func main() {
 	}
 
 	// PROTECTED ROUTES (Requires Token)
-	/*
-	protectedRoutes := r.Group("/api/v1")
-	protectedRoutes.Use(yourAuthMiddleware())
+	
+	protectedRoutes := r.Group("/api/v1/auth")
+	protectedRoutes.Use(middleware.AuthMiddleware())
 	{
 		// protected endpoints here
+		protectedRoutes.GET("/me", authHandler.GetMe)
 	}
-	*/
+	
 
-	log.Println("Server running on :8080")
+	log.Printf("%s running on :8080\n", cfg.App)
+	fmt.Println(cfg.App)
 	if err := r.Run(":8080"); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}

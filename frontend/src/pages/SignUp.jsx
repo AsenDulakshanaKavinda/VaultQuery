@@ -6,7 +6,7 @@ import Field from "../components/Field.jsx";
 export default function SignUp() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    user: "",
+    username: "",
     email: "",
     password: "",
     role: "",
@@ -60,10 +60,10 @@ export default function SignUp() {
 
         <Field
           label="Name"
-          name="name"
+          name="username"
           placeholder="Your full name"
-          autoComplete="name"
-          value={form.name}
+          autoComplete="username"
+          value={form.username}
           onChange={handleChange}
           required
         />

@@ -5,6 +5,9 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  console.log("Full User Object:", user);
+  console.log("User Keys:", Object.keys(user || {}));
+
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
@@ -31,15 +34,32 @@ export default function Dashboard() {
           <section className="dash-card" aria-label="Account details">
             <div className="dash-avatar" aria-hidden="true">
               {user.name?.charAt(0).toUpperCase()}
+              
             </div>
             <dl>
               <div>
+                <dt>ID</dt>
+                <dd>{user.user_id}</dd>
+              </div>
+              <div>
                 <dt>Name</dt>
-                <dd>{user?.name || "N/A"}</dd>
+                <dd>{user.username}</dd>
               </div>
               <div>
                 <dt>Email</dt>
-                <dd>{user?.email || "N/A"}</dd>
+                <dd>{user.email}</dd>
+              </div>
+              <div>
+                <dt>Role</dt>
+                <dd>{user.role}</dd>
+              </div>
+              <div>
+                <dt>Organization</dt>
+                <dd>{user.organization}</dd>
+              </div>
+              <div>
+                <dt>Status</dt>
+                <dd>{user.status}</dd>
               </div>
             </dl>
           </section>

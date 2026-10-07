@@ -1,9 +1,13 @@
 package models
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"AuthService/internal/store"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type RegisterRequest struct {
-	Username     string `json:"name" binding:"required,min=3,max=50"`
+	Username     string `json:"username" binding:"required,min=3,max=50"`
 	Password     string `json:"password" binding:"required,min=8"`
 	Email        string `json:"email" binding:"required"`
 	Role         string `json:"role" binding:"required"`
@@ -12,7 +16,7 @@ type RegisterRequest struct {
 
 type UserResponse struct {
 	UserID       string `json:"user_id"`
-	Username     string `json:"name"`
+	Username     string `json:"username"`
 	Email        string `json:"email"`
 	Role         string `json:"role"`
 	Organization string `json:"organization"`
@@ -21,14 +25,15 @@ type UserResponse struct {
 }
 
 type LoginRequest struct {
-	Email string `json:"email" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
 type TokenResponse struct {
-	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
-	ExpiresIn   int64  `json:"expires_in"` // expiration in seconds
+	AccessToken string       `json:"access_token"`
+	TokenType   string       `json:"token_type"`
+	ExpiresIn   int64        `json:"expires_in"` // expiration in seconds
+	User        UserResponse `json:"user"`
 }
 
 // CustomClaims stores non-sensitive user metadata inside the JWT
@@ -38,4 +43,17 @@ type CustomClaims struct {
 	Role         string `json:"role"`
 	Organization string `json:"organization"`
 	jwt.RegisteredClaims
+}
+
+
+func ToUserResponse(u *store.User) UserResponse {
+    return UserResponse{
+        UserID:       u.UserID,
+        Username:     u.Username,
+        Email:        u.Email,
+        Role:         u.Role,
+        Organization: u.Organization,
+        Status:       u.Status,
+        CreatedAt:    u.CreatedAt,
+    }
 }

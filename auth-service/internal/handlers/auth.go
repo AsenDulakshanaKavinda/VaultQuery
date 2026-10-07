@@ -4,8 +4,10 @@ import (
 	"AuthService/internal/models"
 	"AuthService/internal/services"
 	"AuthService/internal/store"
+	"fmt"
 	"net/http"
-	"uuid"
+
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,14 +51,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "user registered successfully",
-		"user": models.UserResponse{
-			UserID:       user.UserID,
-			Username:     user.Username,
-			Role:         user.Role,
-			Organization: user.Organization,
-			Status:       user.Status,
-			CreatedAt:    user.CreatedAt,
-		},
+		"user":    models.ToUserResponse(user),
 	})
 
 }
@@ -92,10 +87,49 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.UserID, user.Username, user.Email, user.Role)
+
 	c.JSON(http.StatusOK, models.TokenResponse{
 		AccessToken: token,
 		TokenType:   "Bearer",
 		ExpiresIn:   expiresIn,
+		User:        models.ToUserResponse(user),
 	})
 
+}
+
+// GetMe returns the currently authenticated user's details
+func (h *AuthHandler) GetMe(c *gin.Context) {
+	// get user_id set by AuthMiddleware
+	userIDVal, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	// fetch fresh user data from DB
+	userID, ok := userIDVal.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user ID type in context"})
+		return
+	}
+
+	user, err := h.userStore.GetUserByID(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user details"})
+		return
+	}
+	if user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.UserID, user.Username, user.Email, user.Role)
+	
+
+	// return user profile
+	c.JSON(http.StatusOK, gin.H{
+		"user": models.ToUserResponse(user),
+
+	})
 }
