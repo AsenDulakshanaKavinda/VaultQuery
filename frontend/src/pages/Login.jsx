@@ -7,7 +7,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,20 +20,28 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+
     setLoading(true);
     try {
-      // TODO: replace with your API call, e.g.
-      // const res = await fetch("/api/auth/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(form),
-      // });
-      // if (!res.ok) throw new Error((await res.json()).message);
-      // Until the backend exists, the name is faked from the email.
-      // With a real API, use the user object it returns instead:
-      // login(await res.json()); // expects { name, email }
-      login({ name: form.email.split("@")[0], email: form.email });
-      navigate("/", { replace: true });
+      const res = await fetch("http://localhost:8080/api/v1/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      })
+
+      const data = await res.json()
+
+      
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Failed to login.");
+      }
+      // Pass token first, then user data
+      login(data.access_token, data.user);
+      navigate("/", {replace: true})
     } catch (err) {
       setError(err.message || "Could not log in. Check your details and try again.");
     } finally {

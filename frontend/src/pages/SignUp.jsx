@@ -5,7 +5,13 @@ import Field from "../components/Field.jsx";
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "",
+    organization: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,14 +29,21 @@ export default function SignUp() {
 
     setLoading(true);
     try {
-      // TODO: replace with your API call, e.g.
-      // const res = await fetch("/api/auth/register", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(form),
-      // });
-      // if (!res.ok) throw new Error((await res.json()).message);
-      console.log("signup", form);
+      const res = await fetch("http://localhost:8080/api/v1/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || data.error || "Failed to register.");
+      }
+
+      // Success -> navigate to login
       navigate("/login");
     } catch (err) {
       setError(err.message || "Could not create your account. Try again.");
@@ -42,15 +55,15 @@ export default function SignUp() {
   return (
     <AuthLayout>
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h1>Sign up</h1>
+        <h1>Register</h1>
         <p className="auth-sub">Create your VaultQuery account.</p>
 
         <Field
           label="Name"
-          name="name"
+          name="username"
           placeholder="Your full name"
-          autoComplete="name"
-          value={form.name}
+          autoComplete="username"
+          value={form.username}
           onChange={handleChange}
           required
         />
@@ -61,6 +74,24 @@ export default function SignUp() {
           placeholder="you@company.com"
           autoComplete="email"
           value={form.email}
+          onChange={handleChange}
+          required
+        />
+        <Field
+          label="Role"
+          type="text"
+          name="role"
+          placeholder="e.g. Developer, Admin"
+          value={form.role}
+          onChange={handleChange}
+          required
+        />
+        <Field
+          label="Organization"
+          type="text"
+          name="organization"
+          placeholder="e.g. Acme Corp"
+          value={form.organization}
           onChange={handleChange}
           required
         />
@@ -79,7 +110,7 @@ export default function SignUp() {
         {error && <p className="auth-error" role="alert">{error}</p>}
 
         <button className="btn-primary" type="submit" disabled={loading}>
-          {loading ? "Creating account…" : "Sign up"}
+          {loading ? "Creating account…" : "Register"}
         </button>
 
         <p className="auth-switch">
