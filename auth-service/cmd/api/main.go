@@ -59,6 +59,29 @@ func main() {
 	{
 		// protected endpoints here
 		protectedRoutes.GET("/me", authHandler.GetMe)
+
+		// role base example
+		// Admin-only route group
+		/*
+		adminRoutes := api.Group("/admin")
+		adminRoutes.Use(middleware.RequireRole("admin"))
+		{
+			adminRoutes.GET("/users", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{"message": "List of all users"})
+			})
+			adminRoutes.DELETE("/users/:id", func(c *gin.Context) {
+				c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
+			})
+		}
+
+		// Route accessible by multiple roles (e.g., admin or manager)
+		api.GET("/reports", middleware.RequireRole("admin", "manager"), func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "Manager/Admin analytics report"})
+		})
+
+		*/
+
+
 	}
 	
 
