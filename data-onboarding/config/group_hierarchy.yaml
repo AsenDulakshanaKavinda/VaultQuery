@@ -1,0 +1,48 @@
+# Defines the ACL groups and how a logged-in user's groups are resolved at QUERY time.
+#
+# DECISION REQUIRED (see docs/acl-design.md): do higher levels inherit lower-level access?
+#
+#   explicit (default): a user holds ONLY their own group + grp_all. A document is visible
+#                       only if one of those appears in its allowed_groups. This matches the
+#                       source ACL tables literally. Note: under this mode grp_c_suite cannot
+#                       read grp_directors-only content such as /SharePoint/Legal/Contracts/.
+#
+#   inherit:            a user also holds every group listed under `inherits` (transitively).
+#                       Set mode: inherit to enable it, and review the ACL table side effects.
+
+mode: explicit          # explicit | inherit
+
+always_granted: [grp_all]
+
+groups:
+  grp_c_suite:
+    level: 1
+    label: "Executive Leadership (C-Suite)"
+    inherits: [grp_directors]            # only used when mode: inherit
+  grp_directors:
+    level: 2
+    label: "Regional Directors & Department VPs"
+    inherits: [grp_account_managers]
+  grp_account_managers:
+    level: 3
+    label: "Account Managers & Operations Supervisors"
+    inherits: [grp_tier1_support]
+  grp_tier1_support:
+    level: 4
+    label: "Frontline Support & Warehouse Operators"
+    inherits: []
+  grp_all:
+    level: 5
+    label: "Everyone"
+    inherits: []
+  grp_quarantine:
+    level: 99
+    label: "Unmapped content. Held by nobody."
+    inherits: []
+
+# How an identity-provider role claim becomes a group. Used by api/auth.py.
+role_claim_to_group:
+  c_suite: grp_c_suite
+  directors: grp_directors
+  account_managers: grp_account_managers
+  tier1_support: grp_tier1_support
