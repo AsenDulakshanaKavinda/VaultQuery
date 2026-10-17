@@ -8,9 +8,14 @@ meaning its attributes cannot be modified after creation, which helps maintain d
 from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+
 # allow attach metadata and validation rules
 # remove whitespace and Enforces a regular expression patter for group name
 GroupName = Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^grp_[a-z0-9_]+$")]
+
+def normalize_groups(groups: list[str]) -> list[str]:
+    """De-duplicate and sort so the same ACL always serializes the same way."""
+    return sorted(set(groups))
 
 # model_config make model immutable (read-only)
 # can't modify after create
