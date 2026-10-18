@@ -16,6 +16,7 @@ make_chunk_id - generates a unique chunk ID based on doc_id and chunk_index
 4. No lowercasing. Slack, Jira and S3 IDs are case-sensitive, so normalizing them would merge distinct documents.
 """
 
+import hashlib
 import uuid
 
 NAMESPACE = uuid.UUID("99e62a8c-e042-46da-94fc-c1e1902750a2")
@@ -49,3 +50,7 @@ def make_chunk_id(doc_id, chunk_index) -> str:
     which is then hashed using UUID version 5 to produce a consistent and unique identifier.
     """
     return str(uuid.uuid5(NAMESPACE, SEP.join((_check("doc_id", doc_id), str(chunk_index)))))
+
+def content_hash(text: str) -> str:
+    """ This function computes a SHA-256 hash of the given text, which can be used to uniquely identify the content of a document or chunk. """
+    return hashlib.sha256(text.encode('uft-8')).hexdigest()

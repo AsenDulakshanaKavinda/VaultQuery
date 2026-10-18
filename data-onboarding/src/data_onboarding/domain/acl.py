@@ -6,8 +6,8 @@ meaning its attributes cannot be modified after creation, which helps maintain d
 """
 
 from typing import Annotated
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 # allow attach metadata and validation rules
 # remove whitespace and Enforces a regular expression patter for group name
@@ -17,11 +17,14 @@ def normalize_groups(groups: list[str]) -> list[str]:
     """De-duplicate and sort so the same ACL always serializes the same way."""
     return sorted(set(groups))
 
-# model_config make model immutable (read-only)
-# can't modify after create
-# user_id, org_id and groups can't be empty
-# groups must have valid pattern
+
 class UserContext(BaseModel):
+    """
+    model_config make model immutable (read-only)
+    can't modify after create
+    user_id, org_id and groups can't be empty
+    groups must have valid pattern
+    """
     model_config = ConfigDict(frozen=True)
     user_id: str = Field(min_length=1)
     org_id: str = Field(min_length=1)
