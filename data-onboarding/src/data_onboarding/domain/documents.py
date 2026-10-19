@@ -8,9 +8,9 @@ from data_onboarding.domain.ids import content_hash, make_doc_id
 SourceSystem = Literal["s3", "sharepoint", "slack", "jira"]
 
 class SourceDocument(BaseModel):
-    """
+    '''
     what every connector should return from fetch() and what the pipeline will store in the db
-    """
+    '''
 
     model_config = ConfigDict(frozen=True)
     org_id: str = Field(min_length=1)

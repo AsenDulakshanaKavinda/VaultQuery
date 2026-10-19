@@ -10,11 +10,11 @@ from data_onboarding.domain.documents import SourceDocument, SourceSystem
 
 
 class SourceObjectNotFound(Exception):
-    """ 
+    ''' 
     fetch() raise this when the object no longer exists in the source
     the pipeline threats it like a delete, so a race between list_changes() and
     fetch() dose not crash a run
-    """
+    '''
 
 class Change(BaseModel):
     model_config = ConfigDict(frozen=True)

@@ -1,9 +1,9 @@
-"""Loads and validates all configuration at startup.
+'''Loads and validates all configuration at startup.
 
 Secrets come from environment variables (.env, prefix VTL_).
 Tunables come from config/settings.yaml. ACL policy comes from the two ACL yaml files.
 Bad config should fail loudly here, not silently at 2 a.m. during an ingest run.
-"""
+'''
 from __future__ import annotations
 
 from functools import lru_cache
@@ -120,7 +120,7 @@ class GroupHierarchy(BaseModel):
     role_claim_to_group: dict[str, str]
 
     def resolve_user_groups(self, own_group: str) -> set[str]:
-        """Groups a logged-in user holds, used to build the pre-retrieval filter."""
+        '''Groups a logged-in user holds, used to build the pre-retrieval filter.'''
         held = {own_group, *self.always_granted}
         if self.mode == "inherit":
             stack = [own_group]
