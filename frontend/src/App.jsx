@@ -1,25 +1,43 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "./pages/Login.jsx";
-import SignUp from "./pages/SignUp.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import React from 'react';
+import { PrimaryButton, StatusChip } from './components/PrimaryBtn';
+import { ThemeProvider } from './theme/ThemeContext';
+import { ThemeToggle } from './components/theme/ThemeToggle';
+import './styles/globals.css'
+import { WorkspaceHeader } from './components/answer_workspace/WorkspaceHeader';
+
 
 export default function App() {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
+    
+    <ThemeProvider>
+      <WorkspaceHeader 
+        orgName="VTL" 
+        workspaceName="Knowledge workspace" 
+        roleName="Account Managers & Ops Supervisors" 
       />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      <main style={{ padding: '32px', minHeight: '100vh' }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h1>VaultQuery Workbench</h1>
+          <ThemeToggle />
+        </header>
+
+        <section style={{ 
+          backgroundColor: 'var(--surface-card)', 
+          border: '1px solid var(--border)', 
+          borderRadius: '8px', 
+          padding: '24px',
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'center'
+        }}>
+          <PrimaryButton>Primary action</PrimaryButton>
+          <StatusChip type="success" label="Synced" />
+          <StatusChip type="selected" label="Selected source" />
+        </section>
+      </main>
+      
+    </ThemeProvider>
+
+    
   );
 }

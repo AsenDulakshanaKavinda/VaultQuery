@@ -1,0 +1,55 @@
+/* Primary Button */
+.vault-btn-primary {
+  background-color: var(--action-primary);
+  color: var(--action-on-primary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--radius-input); /* 6px as per spec */
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.vault-btn-primary:hover {
+  opacity: 0.9;
+}
+
+.vault-btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Status Chip Base */
+.vault-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-chip); /* Full pill radius */
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+/* Status Chip Variants */
+.vault-chip-success {
+  background-color: var(--success-fill);
+  color: var(--success-text);
+  border-color: var(--success);
+}
+
+.vault-chip-selected {
+  background-color: var(--nav-selection-bg);
+  color: var(--action-primary);
+  border-color: transparent;
+}
+
+/* Success Dot Indicator */
+.vault-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--success);
+}
