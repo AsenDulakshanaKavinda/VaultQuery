@@ -47,9 +47,9 @@ services:
       timeout: 5s
       retries: 10
 
-  # Local stand-in for AWS S3 (vtl-enterprise-docs-prod bucket).
+  # Local stand-in for AWS S3 using your locally cached Chainguard MinIO image.
   minio:
-    image: quay.io/minio/aistor/minio:latest
+    image: cgr.dev/chainguard/minio:latest
     container_name: vtl_minio
     command: server /data --console-address ":9001"
     # Dev only: running as root guarantees the named volume is writable.
@@ -64,10 +64,9 @@ services:
     volumes:
       - minio_data:/data
 
-  # One-shot job: creates the bucket, then exits. (The Chainguard MinIO image has no
-  # shell, so this uses the separate mc client image and retries until MinIO is up.)
+  # One-shot job: creates the bucket, then exits.
   minio-init:
-    image: quay.io/minio/aistor/minio:latest
+    image: cgr.dev/chainguard/minio:latest
     container_name: vtl_minio_init
     depends_on:
       - minio
