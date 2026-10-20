@@ -1,0 +1,86 @@
+name: vtl-pipeline
+
+services:
+  postgres:
+    image: postgres:17.10
+    container_name: vtl_postgres
+    environment:
+      POSTGRES_DB: vtl_pipeline
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vtl_pipeline"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:v1
+    container_name: vtl_qdrant
+    ports:
+      - "6333:6333"     # REST
+      - "6334:6334"     # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: vtl_rabbitmq
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Local stand-in for AWS S3 using your locally cached Chainguard MinIO image.
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: vtl_minio
+    command: server /data --console-address ":9001"
+    # Dev only: running as root guarantees the named volume is writable.
+    user: "0:0"
+    ports:
+      - "9000:9000"     # S3 API
+      - "9001:9001"     # Web console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+      MINIO_SERVER_URL: "http://localhost:9000"
+    volumes:
+      - minio_data:/data
+
+  # One-shot job: creates the bucket, then exits.
+  minio-init:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: vtl_minio_init
+    depends_on:
+      - minio
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 minioadmin minioadminpassword; do
+        echo 'waiting for minio...'; sleep 2;
+      done &&
+      mc mb --ignore-existing local/vtl-enterprise-docs-prod &&
+      echo 'bucket ready'
+      "
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  minio_data:

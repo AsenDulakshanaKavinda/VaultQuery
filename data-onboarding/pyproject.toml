@@ -1,0 +1,22 @@
+[project]
+name = "data-onboarding"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "AsenDulakshnaKavinda", email = "s22010362@ousl.lk" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "minio>=7.2.20",
+    "pydantic-settings>=2.16.1",
+    "pyyaml>=6.0.3",
+    "structlog>=26.1.0",
+]
+
+[project.scripts]
+data-onboarding = "data_onboarding:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
