@@ -8,9 +8,12 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "jira>=3.10.5",
     "minio>=7.2.20",
+    "office365-rest-python-client>=3.3.0",
     "pydantic-settings>=2.16.1",
     "pyyaml>=6.0.3",
+    "slack-sdk>=3.45.0",
     "structlog>=26.1.0",
 ]
 

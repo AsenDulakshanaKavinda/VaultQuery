@@ -3,13 +3,13 @@ import sys
 
 import structlog
 
-from data_onboarding.core.settings import get_settings
+from data_onboarding.core import get_settings
 
 def setup_logger() -> structlog.stdlib.BoundLogger:
     settings = get_settings()
     
 
-    '''Configures structured logging based on application settings.'''
+    ''' Configures structured logging based on application settings. '''
     log_level = getattr(logging, settings.secrets.log_level.upper(), logging.INFO)
 
     shared_processors = [

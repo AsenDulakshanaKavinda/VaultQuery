@@ -8,10 +8,10 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import yaml
 
-ROOT = ""
+ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 class Secrets(BaseSettings):
-    model_config = SettingsConfigDict(env_file="", env_prefix=None, extra=None)
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     
     env: Literal["local", "staging", "prod"]
     log_level: str = "INFO"
@@ -20,6 +20,17 @@ class Secrets(BaseSettings):
     minio_access_key: str | None = None
     minio_secret_key: str | None = None
     minio_secure: str | None = None
+
+    sharepoint_site_url: str | None = None
+    sharepoint_tenant_name: str | None = None
+    sharepoint_client_id: str | None = None
+    sharepoint_client_secret: str | None = None
+
+    jira_server: str | None = None
+    jira_basic_auth: str | None = None
+    jira_token_auth: str | None = None
+
+    slack_token: str | None = None
 
 class AppConfig(BaseModel):
     name: str
@@ -35,6 +46,10 @@ def _yaml(path: Path) -> dict:
 
 @lru_cache
 def get_settings() -> Settings:
+    ''' 
+    Loads settings from the .env file and the settings.yaml file. 
+    use lru_cache to cache the settings so that they are only loaded once. 
+    '''
     app = AppConfig(**_yaml(ROOT / "config" / "settings.yaml"))
     return Settings(
         secrets=Secrets(),
