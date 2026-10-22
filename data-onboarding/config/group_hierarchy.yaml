@@ -1,0 +1,42 @@
+mode: inherit
+always_granted:
+  - grp_all
+groups:
+  grp_quarantine:
+    level: 0
+    label: Quarantine Group
+    inherits: []
+
+  grp_all:
+    level: 1
+    label: All Employees
+    inherits: []
+
+  grp_tier1_support:
+    level: 2
+    label: Tier 1 Support
+    inherits: []
+
+  grp_account_managers:
+    level: 3
+    label: Account Managers
+    inherits:
+      - grp_tier1_support
+
+  grp_directors:
+    level: 4
+    label: Directors
+    inherits:
+      - grp_account_managers
+
+  grp_c_suite:
+    level: 5
+    label: C Suite
+    inherits:
+      - grp_directors
+
+role_claim_to_group:
+  tier1_support: grp_tier1_support
+  account_managers: grp_account_managers
+  directors: grp_directors
+  c_suite: grp_c_suite

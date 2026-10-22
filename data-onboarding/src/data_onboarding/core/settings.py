@@ -1,12 +1,12 @@
 from __future__ import annotations
+
 from functools import lru_cache
-import os
 from pathlib import Path
 from typing import Literal
 
+import yaml
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import yaml
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 

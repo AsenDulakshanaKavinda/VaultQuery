@@ -7,7 +7,8 @@ settings = get_settings()
 
 
 class SlackConnection:
-    ''' A singleton class for managing Slack connections. '''
+    """A singleton class for managing Slack connections."""
+
     _instance = None
     _client = None
 
@@ -16,7 +17,7 @@ class SlackConnection:
             if not settings.secrets.slack_token:
                 raise ValueError("Slack Bot Token must be provided for initial setup.")
 
-            cls._instance = super(SlackConnection, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
 
             cls._client = WebClient(token=settings.secrets.slack_token)
             log.info("Slack connection initialized successfully.")
@@ -25,5 +26,5 @@ class SlackConnection:
 
     @property
     def client(self):
-        ''' Returns the active Slack WebClient instance. '''
+        """Returns the active Slack WebClient instance."""
         return self._client
