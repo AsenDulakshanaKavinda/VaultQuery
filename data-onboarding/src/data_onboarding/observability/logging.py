@@ -3,14 +3,13 @@ import sys
 
 import structlog
 
-from .settings import get_settings
+from data_onboarding.core import get_settings
 
 
 def setup_logger() -> structlog.stdlib.BoundLogger:
     settings = get_settings()
-    
 
-    """Configures structured logging based on application settings."""
+    """ Configures structured logging based on application settings. """
     log_level = getattr(logging, settings.secrets.log_level.upper(), logging.INFO)
 
     shared_processors = [
@@ -24,10 +23,10 @@ def setup_logger() -> structlog.stdlib.BoundLogger:
 
     if settings.secrets.env == "prod":
         # render JSON for container logs/k8s
-        renderer = structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer()
     else:
         # readable colored output for local development
-        renderer = structlog.dev.ConsoleRenderer(colors=True)
+        structlog.dev.ConsoleRenderer(colors=True)
 
     structlog.configure(
         processors=shared_processors
@@ -40,10 +39,13 @@ def setup_logger() -> structlog.stdlib.BoundLogger:
     )
 
     formatter = structlog.stdlib.ProcessorFormatter(
-        foreign_pre_chain=structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        foreign_pre_chain=[  # <-- Must be a list or tuple!
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+        ],
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            renderer,
+            structlog.dev.ConsoleRenderer(),
         ],
     )
 
