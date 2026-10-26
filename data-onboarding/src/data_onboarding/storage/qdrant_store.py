@@ -43,3 +43,42 @@ class QdrantVectorStore:
                 )
             )
         self.client.upsert(collection_name=self.collection_name, points=points)
+
+    def update_payload_by_source_id(
+        self, source_id: str, new_allowed_groups: list[str], new_rule_id: str
+    ):
+        self.client.set_payload(
+            collection_name=self.collection_name,
+            payload={
+                "allowed_groups": new_allowed_groups,
+                "rule_id": new_rule_id,
+            },
+            points=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="source_id",
+                        match=models.MatchValue(value=source_id),
+                    )
+                ]
+            ),
+        )
+
+    def delete_points_by_source_ids(self, source_ids: list[str]) -> None:
+        """Deletes all vector chunks in Qdrant associated with the given source IDs."""
+        if not source_ids:
+            return
+
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=models.FilterSelector(
+                filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="source_id",
+                            match=models.MatchAny(any=source_ids),
+                        )
+                    ]
+                )
+            ),
+            wait=True,
+        )

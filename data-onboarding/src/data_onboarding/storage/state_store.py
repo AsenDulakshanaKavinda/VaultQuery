@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple
 
-from sqlalchemy import DateTime, Index, String, create_engine, select
+from sqlalchemy import DateTime, Index, String, create_engine, delete, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -182,3 +182,25 @@ class PostgresStateStore:
         return hashlib.sha256(
             json.dumps(sorted(list(set(allowed_groups)))).encode()
         ).hexdigest()
+
+    async def get_all_source_ids(self, source_system: str) -> list[str]:
+        """returns all source_ids currently registered in the state store for a given system"""
+        async with self.session_factory() as session:
+            stmt = select(DocumentState.source_id).where(
+                DocumentState.source_system == source_system
+            )
+            result = await session.scalars(stmt)
+            return list(result.all())
+
+    async def delete_states(self, source_system: str, source_ids: list[str]) -> None:
+        """removes tracking state for tombstoned documents in bulk."""
+        if not source_ids:
+            return
+
+        async with self.session_factory() as session:
+            async with session.begin():
+                stmt = delete(DocumentState).where(
+                    DocumentState.source_system == source_system,
+                    DocumentState.source_id.in_(source_ids),
+                )
+                await session.execute(stmt)
