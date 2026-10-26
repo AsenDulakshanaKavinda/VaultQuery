@@ -1,18 +1,17 @@
 
 
-from dataclasses import dataclass
-from pydantic import BaseModel
 import tiktoken
+from pydantic import BaseModel
 
-from data_onboarding.acl.acl import GroupName
-from data_onboarding.domain import make_chunk_id, make_doc_id
+from data_onboarding.domain import make_chunk_id
 
 
 class TextChunk(BaseModel):
-    text: str
     document_id: str
-
-
+    chunk_index: int
+    chunk_id: str
+    text_chunk: str
+    chunker_version: str
 
 
 class TokenChunker:
@@ -36,7 +35,11 @@ class TokenChunker:
 
             chunks.append(
                 TextChunk(
-                    text=text
+                    document_id = document_id,
+                    chunk_index = i,
+                    text_chunk = chunk_text,
+                    chunk_id = chunk_id,
+                    chunker_version=self.version
                 )
             )
         return chunks

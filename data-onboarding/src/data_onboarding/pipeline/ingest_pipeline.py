@@ -23,6 +23,7 @@ class IngestionPipeline:
         self.embedder = embedder
         self.vector_store = vector_store
         self.source_system = source_system_name
+        self.org_id = "test"
 
     async def run(self):
         async for source_id in self.connector.list_changes():
@@ -39,22 +40,19 @@ class IngestionPipeline:
             chunks = self.chunker.create_chunk(
                 markdown_text,
                 document_id=document_id,
-                org_id=self.org_id,
-                source_system=self.source_system,
-                source_url=hints["path"],
-                allowed_groups=list(decision.allowed_groups),
+                # org_id=self.org_id,
+                # source_system=self.source_system,
+                # source_url=hints["path"],
+                # allowed_groups=list(decision.allowed_groups),
             )
 
-            # 4. chunk the markdown text into smaller pieces using the chunker
-            chunks = self.chunker.chunk(markdown_text, document_id=source_id)
-
             # 5. embed the chunks using the embedder and upsert them into the vector store
-            texts = [c.text for c in chunks]
+            texts = [c.text_chunk for c in chunks]
             vectors = self.embedder.embed(texts)
 
             payload_template = {
                 "org_id": self.org_id,
-                "doc_id": doc_id,
+                "doc_id": document_id,
                 "source_system": self.source_system,
                 "source_id": source_id,
                 "allowed_groups": list(decision.allowed_groups),

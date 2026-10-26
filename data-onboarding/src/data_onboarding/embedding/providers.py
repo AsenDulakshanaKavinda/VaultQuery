@@ -1,16 +1,15 @@
-
 from pathlib import Path
 from typing import Protocol
-from data_onboarding.observability import log
 
 from sentence_transformers import SentenceTransformer
+
+from data_onboarding.observability import log
 
 
 class Embedder(Protocol):
     model_name: str
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
-        ...
+    def embed(self, texts: list[str]) -> list[list[float]]: ...
 
 
 class LocalSentenceTransformerEmbedder:

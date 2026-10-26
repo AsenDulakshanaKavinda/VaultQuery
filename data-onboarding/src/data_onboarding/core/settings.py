@@ -10,9 +10,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
+
 class Secrets(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-    
+
     env: Literal["local", "staging", "prod"]
     log_level: str = "INFO"
 
@@ -20,6 +21,7 @@ class Secrets(BaseSettings):
     minio_access_key: str | None = None
     minio_secret_key: str | None = None
     minio_secure: str | None = None
+    minio_bucket: str | None = None
 
     sharepoint_site_url: str | None = None
     sharepoint_tenant_name: str | None = None
@@ -34,26 +36,25 @@ class Secrets(BaseSettings):
 
     hf_token_read: str | None = None
 
+
 class AppConfig(BaseModel):
     name: str
+
 
 class Settings(BaseModel):
     secrets: Secrets
     app: AppConfig
 
+
 def _yaml(path: Path) -> dict:
-    return yaml.safe_load(
-        (path if path.is_absolute() else ROOT / path).read_text()
-    )
+    return yaml.safe_load((path if path.is_absolute() else ROOT / path).read_text())
+
 
 @lru_cache
 def get_settings() -> Settings:
-    ''' 
-    Loads settings from the .env file and the settings.yaml file. 
-    use lru_cache to cache the settings so that they are only loaded once. 
-    '''
+    """
+    Loads settings from the .env file and the settings.yaml file.
+    use lru_cache to cache the settings so that they are only loaded once.
+    """
     app = AppConfig(**_yaml(ROOT / "config" / "settings.yaml"))
-    return Settings(
-        secrets=Secrets(),
-        app=app
-    )
+    return Settings(secrets=Secrets(), app=app)

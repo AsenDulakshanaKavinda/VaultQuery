@@ -1,8 +1,12 @@
 
 import pytest
 
-from data_onboarding.acl.paths import normalize_channel, normalize_path, normalize_project_key, path_has_prefix
-
+from data_onboarding.acl.paths import (
+    normalize_channel,
+    normalize_path,
+    normalize_project_key,
+    path_has_prefix,
+)
 
 
 def test_normalize_path_basic():

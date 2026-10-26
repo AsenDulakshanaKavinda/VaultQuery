@@ -1,8 +1,9 @@
 
 
-from abc import ABC, abstractmethod
-from typing import Any, AsyncIterable, Protocol
+from collections.abc import AsyncIterable
 from datetime import datetime
+from typing import Any, Protocol
+
 
 class BaseConnector(Protocol):
     """ abstract interface for all source connectors """

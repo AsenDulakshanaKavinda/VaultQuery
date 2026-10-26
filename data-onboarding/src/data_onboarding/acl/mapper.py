@@ -20,6 +20,9 @@ from data_onboarding.acl.paths import (
     normalize_project_key,
     path_has_prefix,
 )
+from data_onboarding.core import get_settings
+
+settings = get_settings()
 
 
 @dataclass(frozen=True)
@@ -54,7 +57,9 @@ class AclMapper:
         match = rule.match
         if isinstance(match, PathPrefixMatch):
             compiled["hint_key"] = HINT_PATH
-            compiled["norm_prefix"] = normalize_path(match.value)
+            compiled["norm_prefix"] = normalize_path(
+                match.value, settings.secrets.minio_bucket
+            )
         elif isinstance(match, ChannelNameMatch):
             compiled["hint_key"] = HINT_CHANNEL
             compiled["norm_channels"] = {normalize_channel(c) for c in match.values}
@@ -66,7 +71,7 @@ class AclMapper:
 
     def map(self, source_system: str, acl_hints: Mapping[str, Any]) -> AclDecision:
         """Maps ACL hints to allowed groups based on defined rules."""
-        
+
         for c_rule in self._compiled_rules:
             # 1. Skip if source system differs
             if c_rule["source_system"] != source_system:
@@ -81,7 +86,9 @@ class AclMapper:
             rule_match = c_rule["rule"].match
             if isinstance(rule_match, PathPrefixMatch):
                 try:
-                    norm_path = normalize_path(raw_hint)
+                    norm_path = normalize_path(
+                        path=raw_hint, strip_prefix=settings.secrets.minio_bucket
+                    )
                 except ValueError:
                     continue  # Invalid path/traversal attempt
                 if path_has_prefix(norm_path, c_rule["norm_prefix"]):
@@ -101,7 +108,9 @@ class AclMapper:
         return AclDecision((self.quarantine_group,), None)
 
     @classmethod
-    def from_yaml(cls, path: str | Path, quarantine_group: str = "grp_quarantine") -> "AclMapper":
+    def from_yaml(
+        cls, path: str | Path, quarantine_group: str = "grp_quarantine"
+    ) -> "AclMapper":
 
         path = Path(path)
         raw_data = yaml.safe_load(path.read_text())
@@ -127,13 +136,8 @@ class AclMapper:
                 id=r_dict["id"],
                 source_system=r_dict["source_system"],
                 match=match_obj,
-                allowed_groups=r_dict["allowed_groups"]
+                allowed_groups=r_dict["allowed_groups"],
             )
             parsed_rules.append(rule)
 
         return cls(rules=parsed_rules, quarantine_group=quarantine_group)
-
-
-
-
-    

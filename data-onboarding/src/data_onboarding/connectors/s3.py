@@ -1,5 +1,6 @@
+from collections.abc import AsyncIterable
 from datetime import datetime
-from typing import Any, AsyncIterable
+from typing import Any
 
 from minio import Minio
 
@@ -50,7 +51,6 @@ class S3Connector(BaseConnector):
         objects = self.client.list_objects(self.bucket_name, recursive=True)
         for obj in objects:
             if obj.object_name.endswith(self.allowed_extension):
-                print(f"--- {obj.object_name} ---")
                 yield obj.object_name
 
     async def fetch(self, source_id: str) -> tuple[bytes, dict[str, Any]]:

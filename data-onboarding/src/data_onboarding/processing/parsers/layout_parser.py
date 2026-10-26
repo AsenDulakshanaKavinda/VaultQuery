@@ -23,14 +23,12 @@ class LayoutParser:
                 text = page.get_text("text").strip()
 
                 if text:
-                    pages.append(
-                        f"## Page {page_number}\n\n{text}"
-                    )
+                    pages.append(f"## Page {page_number}\n\n{text}")
 
             return "\n\n".join(pages)
 
     @staticmethod
-    def parse_docx(file_bytes: bytes) -> str:
+    def _parse_docx(file_bytes: bytes) -> str:
         """Parse DOCX bytes and return the extracted text in markdown format."""
         doc = Document(io.BytesIO(file_bytes))
         paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]

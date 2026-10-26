@@ -22,7 +22,7 @@ class PathPrefixMatch(BaseModel):
 
     model_config = ConfigDict(frozen=True)
     type: Literal["path_prefix"] = "path_prefix"
-    value: str # e.g., "/SharePoint/Legal/Contracts/"
+    value: str  # e.g., "/SharePoint/Legal/Contracts/"
 
 
 class ChannelNameMatch(BaseModel):
@@ -33,7 +33,7 @@ class ChannelNameMatch(BaseModel):
 
     model_config = ConfigDict(frozen=True)
     type: Literal["channel_name"] = "channel_name"
-    values: list[str] # e.g., ["general", "announcements"]
+    values: list[str]  # e.g., ["general", "announcements"]
 
 
 class ProjectKeyMatch(BaseModel):
@@ -44,16 +44,16 @@ class ProjectKeyMatch(BaseModel):
 
     model_config = ConfigDict(frozen=True)
     type: Literal["project_key"] = "project_key"
-    values: list[str] # e.g., ["IT", "WH"]
+    values: list[str]  # e.g., ["IT", "WH"]
 
 
 """
 The policy uses tagged union variants (AclMatch) to structure match rules depending on the source system:
-- PathPrefixMatch: Used for sharepoint and s3. Wraps a directory path string prefix 
+- PathPrefixMatch: Used for sharepoint and s3. Wraps a directory path string prefix
     (e.g., "/SharePoint/Legal/Contracts/").
-- ChannelNameMatch: Used for slack. Contains a list of channel names 
+- ChannelNameMatch: Used for slack. Contains a list of channel names
     (e.g., ["general", "announcements"]).
-- ProjectKeyMatch: Used for jira. Contains a list of project key identifiers 
+- ProjectKeyMatch: Used for jira. Contains a list of project key identifiers
     (e.g., ["WH", "IT"]).
 """
 AclMatch = PathPrefixMatch | ChannelNameMatch | ProjectKeyMatch

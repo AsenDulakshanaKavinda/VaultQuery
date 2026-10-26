@@ -5,9 +5,10 @@ class QdrantVectorStore:
     def __init__(self, client: QdrantClient, collection_name: str = "vtl_knowledge"):
         self.client = client
         self.collection_name = collection_name
+        self.collection = self.bootstrap_collection()
 
-    def bootstrap_collection(self, vector_size: int = 1536):
-        """responsible for creatingQdrantClient the collection if it doesn't exist yet"""
+    def bootstrap_collection(self, vector_size: int = 384):
+        """responsible for creating QdrantClient the collection if it doesn't exist yet"""
         if not self.client.collection_exists(self.collection_name):
             self.client.create_collection(
                 collection_name=self.collection_name,
@@ -31,7 +32,7 @@ class QdrantVectorStore:
             payload = {
                 **payload_template,
                 "chunk_id": chunk.chunk_id,
-                "text": chunk.text,
+                "text": chunk.text_chunk,
                 "chunker_version": chunk.chunker_version,
             }
             points.append(

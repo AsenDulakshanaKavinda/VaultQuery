@@ -23,10 +23,10 @@ def setup_logger() -> structlog.stdlib.BoundLogger:
 
     if settings.secrets.env == "prod":
         # render JSON for container logs/k8s
-        renderer = structlog.processors.JSONRenderer()
+        structlog.processors.JSONRenderer()
     else:
         # readable colored output for local development
-        renderer = structlog.dev.ConsoleRenderer(colors=True)
+        structlog.dev.ConsoleRenderer(colors=True)
 
     structlog.configure(
         processors=shared_processors
@@ -39,15 +39,15 @@ def setup_logger() -> structlog.stdlib.BoundLogger:
     )
 
     formatter = structlog.stdlib.ProcessorFormatter(
-    foreign_pre_chain=[  # <-- Must be a list or tuple!
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-    ],
-    processors=[
-        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-        structlog.dev.ConsoleRenderer(),
-    ],
-)
+        foreign_pre_chain=[  # <-- Must be a list or tuple!
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+        ],
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            structlog.dev.ConsoleRenderer(),
+        ],
+    )
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)

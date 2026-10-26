@@ -1,6 +1,7 @@
-def normalize_path(path: str) -> str:
+def normalize_path(path: str, strip_prefix: str | None = None) -> str:
     """
     normalize canonical path strings
+    - Remove the prefix from path (bucket name)
     - Replaces backslashes with slashes
     - Rejects null bytes and traversal above root
     - Collapses repeated slashes, removes '.' and resolves '..'
@@ -11,6 +12,16 @@ def normalize_path(path: str) -> str:
         raise ValueError("null byte in path")
 
     path = path.replace("\\", "/")
+
+    if strip_prefix:
+        strip_prefix = strip_prefix.replace("\\", "/").strip("/")
+        parts = [p for p in path.split("/") if p]
+        prefix_parts = [p for p in strip_prefix.split("/") if p]
+
+        if parts[: len(prefix_parts)] == prefix_parts:
+            parts = parts[len(prefix_parts) :]
+        path = "/" + "/".join(parts)
+
     segments = path.split("/")
     stack: list[str] = []
 
