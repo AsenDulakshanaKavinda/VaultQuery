@@ -74,7 +74,7 @@ class AclRule(BaseModel):
     confidentiality: str | None = None
     content_type: str | None = None
 
-    @model_validator(model="after")
+    @model_validator(mode="after")
     def validate_allowed_groups_non_empty(self) -> "AclRule":
         if not self.allowed_groups:
             raise ValueError("allowed_groups must be non-empty")
@@ -147,5 +147,12 @@ class Chunk(BaseModel):
     """Represents a data chunk with its unique identifier and the set of allowed groups."""
 
     model_config = ConfigDict(frozen=True)
-    chunk_id: str
+
+    org_id: str
+    doc_id: str
+    chunk_index: str
+    source_system: str
+    source_url: str
+    text: str
+    chunker_version: str
     allowed_groups: tuple[GroupName, ...]  # Non-empty, deduplicated, sorted

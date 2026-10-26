@@ -1,14 +1,18 @@
 
 
 from dataclasses import dataclass
+from pydantic import BaseModel
 import tiktoken
 
-@dataclass(frozen=True)
-class TextChunk:
-    chunk_id: str
+from data_onboarding.acl.acl import GroupName
+from data_onboarding.domain import make_chunk_id, make_doc_id
+
+
+class TextChunk(BaseModel):
     text: str
-    token_count: int
-    chunker_version: str
+    document_id: str
+
+
 
 
 class TokenChunker:
@@ -18,23 +22,21 @@ class TokenChunker:
         self.version = version
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
 
-    def chunk(self, text: str, document_id: str) -> list[TextChunk]:
+    def create_chunk(self, text: str, document_id: str) -> list[TextChunk]:
         ''' Create chunks of text based on the specified chunk size and overlap, returning a list of TextChunk objects. '''
         tokens = self.tokenizer.encode(text)
         chunks = []
+
 
         step = self.chunk_size - self.overlap
         for i in range(0, len(tokens), step):
             chunk_tokens = tokens[i: i + self.chunk_size]
             chunk_text = self.tokenizer.decode(chunk_tokens)
-            chunk_id = f"{document_id}#chunk_{len(chunks)}"
+            chunk_id = make_chunk_id(doc_id=document_id, chunk_index=i)
 
             chunks.append(
                 TextChunk(
-                    chunk_id=chunk_id,
-                    text=chunk_text,
-                    token_count=len(chunk_tokens),
-                    chunker_version=self.version,
+                    text=text
                 )
             )
         return chunks

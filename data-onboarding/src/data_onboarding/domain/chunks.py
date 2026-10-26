@@ -1,6 +1,5 @@
-from dataclasses import Field
 
-from pydantic import BaseModel, ConfigDict, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, computed_field, field_validator, Field
 
 from data_onboarding.acl.acl import GroupName, SourceSystem
 from data_onboarding.acl.paths import normalize_groups

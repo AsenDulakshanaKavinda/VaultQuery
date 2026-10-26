@@ -32,6 +32,8 @@ class Secrets(BaseSettings):
 
     slack_token: str | None = None
 
+    hf_token_read: str | None = None
+
 class AppConfig(BaseModel):
     name: str
 

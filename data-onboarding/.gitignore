@@ -227,3 +227,6 @@ __marimo__/
 keys
 .keys
 ./keys
+
+# model
+models
