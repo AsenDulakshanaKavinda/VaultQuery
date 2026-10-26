@@ -40,10 +40,6 @@ class IngestionPipeline:
             chunks = self.chunker.create_chunk(
                 markdown_text,
                 document_id=document_id,
-                # org_id=self.org_id,
-                # source_system=self.source_system,
-                # source_url=hints["path"],
-                # allowed_groups=list(decision.allowed_groups),
             )
 
             # 5. embed the chunks using the embedder and upsert them into the vector store

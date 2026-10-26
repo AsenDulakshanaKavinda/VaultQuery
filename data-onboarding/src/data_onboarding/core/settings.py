@@ -36,6 +36,9 @@ class Secrets(BaseSettings):
 
     hf_token_read: str | None = None
 
+    async_database_url: str | None = None
+    sync_database_url: str | None = None
+
 
 class AppConfig(BaseModel):
     name: str

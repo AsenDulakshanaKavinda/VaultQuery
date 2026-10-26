@@ -2,16 +2,17 @@
 import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import create_engine
+from sqlalchemy import DateTime, Index, String, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from data_onboarding.core import get_settings
 
@@ -34,8 +35,18 @@ class Base(DeclarativeBase):
     ...
 
 class DocumentState(Base):
-    __table__ = "document_state"
+    __tablename__ = "document_state"
 
+    source_system: Mapped[str] = mapped_column(String(64), primary_key=True, nullable=False)
+    source_id: Mapped[str] = mapped_column(String(512), primary_key=True, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    acl_groups_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    last_synced_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # Maps to: CREATE INDEX IF NOT EXISTS idx_doc_state_system ON document_state(source_system);
+    __table_args__ = (
+        Index("idx_doc_state_system", "source_system"),
+    )
 
 
 class Database:
