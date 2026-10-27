@@ -37,7 +37,7 @@ func LoadConfig() (*Config, error) {
 func LoadSettings() *Settings {
 	return &Settings{
 		Env:         getenv("ENV", "development"),
-		DatabaseURL: getenv("DATABASE_URL", "postgres://admin:1234@localhost:5432/postgres?sslmode=disable"),
+		DatabaseURL: getenv("DATABASE_URL", "postgres://postgres:postgrespassword@localhost:5432/vtl_pipeline?sslmode=disable"),
 		Port:        getenv("PORT", "8080"),
 	}
 }
