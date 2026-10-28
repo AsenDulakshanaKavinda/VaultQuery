@@ -39,8 +39,9 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		UserID:         uuid.New().String(),
 		Username:       req.Username,
 		Email:          req.Email,
-		Role:           req.Role,
 		HashedPassword: hashedPassword,
+		// this should be 
+		Role:           req.Role,
 		Organization:   req.Organization,
 	}
 
