@@ -3,11 +3,13 @@ package store
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type RegisterRequest struct {
-	RequestID      string `json:"request_id"`
-	UserName       string `json:"username"`
+	RequestID      string `json:"req_id"`
+	Username       string `json:"Username"`
 	Email          string `json:"email"`
 	HashedPassword string `json:"hashed_password"`
 	Status         string `json:"status"`
@@ -25,14 +27,14 @@ func NewAdminStore(db *sql.DB) *AdminStore {
 
 func (s *AdminStore) CreateRegisterRequest(r *RegisterRequest) error {
 	query := `
-		INSERT INTO register_request (request_id, username, email, handed_password, status, requested_at, updated_at)
+		INSERT INTO register_request (req_id, Username, email, handed_password, status, requested_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 		RETURNING status, requested_at;`
 
 	err := s.db.QueryRow(
 		query,
 		r.RequestID,
-		r.UserName,
+		r.Username,
 		r.Email,
 		r.HashedPassword,
 		r.Status,
@@ -48,7 +50,7 @@ func (s *AdminStore) CreateRegisterRequest(r *RegisterRequest) error {
 }
 
 func (s *AdminStore) GetAllRegisterRequests() ([]*RegisterRequest, error) {
-	query := `SELECT request_id, username, email, hashed_password, status, requested_at, updated_at FROM register_request`
+	query := `SELECT req_id, Username, email, hashed_password, status, requested_at, updated_at FROM register_request`
 
 	rows, err := s.db.Query(query)
 	if err != nil {
@@ -59,7 +61,7 @@ func (s *AdminStore) GetAllRegisterRequests() ([]*RegisterRequest, error) {
 	var requests []*RegisterRequest
 	for rows.Next() {
 		var r RegisterRequest
-		if err := rows.Scan(&r.RequestID, &r.UserName, &r.Email, &r.HashedPassword, &r.Status, &r.RequestedAt, &r.UpdatedAt); err != nil {
+		if err := rows.Scan(&r.RequestID, &r.Username, &r.Email, &r.HashedPassword, &r.Status, &r.RequestedAt, &r.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan register request: %w", err)
 		}
 		requests = append(requests, &r)
@@ -72,7 +74,7 @@ func (s *AdminStore) GetAllRegisterRequests() ([]*RegisterRequest, error) {
 }
 
 func (s *AdminStore) FilterRegisterRequestsByStatus(status string) ([]*RegisterRequest, error) {
-	query := `SELECT request_id, username, email, hashed_password, status, requested_at, updated_at FROM register_request WHERE request_id = $1`
+	query := `SELECT req_id, username, email, hashed_password, status, requested_at, updated_at FROM register_request WHERE status = $1`
 
 	rows, err := s.db.Query(query, status)
 	if err != nil {
@@ -83,7 +85,7 @@ func (s *AdminStore) FilterRegisterRequestsByStatus(status string) ([]*RegisterR
 	var requests []*RegisterRequest
 	for rows.Next() {
 		var r RegisterRequest
-		if err := rows.Scan(&r.RequestID, &r.UserName, &r.Email, &r.HashedPassword, &r.Status, &r.RequestedAt, &r.UpdatedAt); err != nil {
+		if err := rows.Scan(&r.RequestID, &r.Username, &r.Email, &r.HashedPassword, &r.Status, &r.RequestedAt, &r.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan register request: %w", err)
 		}
 		requests = append(requests, &r)
@@ -98,12 +100,12 @@ func (s *AdminStore) FilterRegisterRequestsByStatus(status string) ([]*RegisterR
 }
 
 func (s *AdminStore) GetRegisterRequestsByID(requestID string) (*RegisterRequest, error) {
-	query := `SELECT request_id, username, email, hashed_password, status, requested_at, updated_at FROM register_request WHERE request_id = $1`
+	query := `SELECT req_id, Username, email, hashed_password, status, requested_at, updated_at FROM register_request WHERE req_id = $1`
 
 	var r RegisterRequest
 	err := s.db.QueryRow(query, requestID).Scan(
 		&r.RequestID,
-		&r.UserName,
+		&r.Username,
 		&r.Email,
 		&r.HashedPassword,
 		&r.Status,
@@ -118,4 +120,30 @@ func (s *AdminStore) GetRegisterRequestsByID(requestID string) (*RegisterRequest
 		return nil, fmt.Errorf("failed to get register request by id: %w", err)
 	}
 	return &r, nil
+}
+
+func (s *AdminStore) UpdateRegisterRequestByID(id string, status string) (*RegisterRequest, error) {
+	query := `
+        UPDATE register_request 
+        SET status = $2, updated_at = NOW() 
+        WHERE req_id = $1 
+        RETURNING req_id, Username, email, hashed_password, status, requested_at, updated_at
+    `
+
+	var req RegisterRequest
+	err := s.db.QueryRow(query, id, status).Scan(
+		&req.RequestID,
+		&req.Username,
+		&req.Email,
+		&req.HashedPassword,
+		&req.Status,
+		&req.RequestedAt,
+		&req.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &req, nil
 }

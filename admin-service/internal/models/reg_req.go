@@ -3,14 +3,14 @@ package models
 import "admin-service/internal/store"
 
 type RegisterRequestPayload struct {
-	Username string `json:"username" binding:"required,min=3,max=50"`
+	Username string `json:"Username" binding:"required,min=3,max=50"`
 	Password string `json:"password" binding:"required,min=8"`
 	Email    string `json:"email" binding:"required"`
 }
 
 type RegisterRequestResponse struct {
-	RequestID      string `json:"request_id"`
-	UserName       string `json:"username"`
+	RequestID      string `json:"req_id"`
+	Username       string `json:"Username"`
 	Email          string `json:"email"`
 	HashedPassword string `json:"hashed_password"`
 	Status         string `json:"status"`
@@ -21,7 +21,7 @@ type RegisterRequestResponse struct {
 func ToRegisterRequestResponse(u *store.RegisterRequest) RegisterRequestResponse {
 	return RegisterRequestResponse{
 		RequestID:      u.RequestID,
-		UserName:       u.UserName,
+		Username:       u.Username,
 		Email:          u.Email,
 		HashedPassword: u.HashedPassword,
 		Status:         u.Status,
