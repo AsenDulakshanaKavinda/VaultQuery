@@ -99,7 +99,7 @@ func (h RegisterRequestHandler) FetchRegisterRequestByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":  "fetched all register request",
+		"message":  "fetched register request by id",
 		"response": response,
 	})
 }

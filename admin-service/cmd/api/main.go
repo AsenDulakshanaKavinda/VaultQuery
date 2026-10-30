@@ -43,7 +43,7 @@ func main()  {
 		adminRoutes.GET("/fetch-all-user-register-req", registerRequestHandler.FetchAllRegisterRequest)
 		adminRoutes.GET("/fetch-user-register-req-id/:id", registerRequestHandler.FetchRegisterRequestByID)
 		adminRoutes.GET("/register-requests", registerRequestHandler.FilterRegisterRequestStatus)
-		adminRoutes.PUT("/register-requests/:id", registerRequestHandler.UpdateRegisterRequest)
+		adminRoutes.PUT("/register-requests-update/:id", registerRequestHandler.UpdateRegisterRequest)
 	}
 
 
