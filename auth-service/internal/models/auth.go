@@ -14,6 +14,12 @@ type RegisterRequest struct {
 	Organization string `json:"organization" binding:"required"`
 }
 
+type RegisterRequestPayload struct {
+	Username string `json:"Username" binding:"required,min=3,max=50"`
+	Password string `json:"password" binding:"required,min=8"`
+	Email    string `json:"email" binding:"required"`
+}
+
 type UserResponse struct {
 	UserID       string `json:"user_id"`
 	Username     string `json:"username"`

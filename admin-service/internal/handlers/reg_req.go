@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"admin-service/internal/models"
-	"admin-service/internal/services"
 	"admin-service/internal/store"
 	"fmt"
 	"net/http"
@@ -28,11 +27,6 @@ func (h RegisterRequestHandler) CreateRegisterRequest(c *gin.Context) {
 		return
 	}
 
-	hashedPassword, err := services.HashPassword(req.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process password"})
-		return
-	}
 
 	requestID := uuid.New().String()
 
@@ -40,7 +34,7 @@ func (h RegisterRequestHandler) CreateRegisterRequest(c *gin.Context) {
 		RequestID:      requestID,
 		Username:       req.Username,
 		Email:          req.Email,
-		HashedPassword: hashedPassword,
+		HashedPassword: req.HashedPassword,
 		Status:         "pending",
 	}
 
@@ -166,4 +160,69 @@ func (h RegisterRequestHandler) UpdateRegisterRequest(c *gin.Context) {
 		"response": response,
 	})
 
+}
+
+type ApproveUser struct {
+	Id string `json:"id" binding:"required"`
+	Role string `json:"role" binding:"required"`
+	Status string `json:"status" binding:"required"`
+	Organization string `json:"organization" binding:"required"`
+
+}
+
+// update register request
+// Define a clear input struct for the approval payload
+type ApproveRequestInput struct {
+    Role         string `json:"role" binding:"required"`
+    Status       string `json:"status" binding:"required"`       // Status for the register request (e.g., "approved")
+    UserStatus   string `json:"user_status" binding:"required"`  // Status for the new user profile (e.g., "active")
+    Organization string `json:"organization" binding:"required"`
+}
+
+func (h RegisterRequestHandler) ApproveRegisterRequest(c *gin.Context) {
+    // Get the request ID from the URL path parameter (e.g., /admin/approve/:id)
+    id := c.Param("id")
+
+    var input ApproveRequestInput
+    if err := c.ShouldBindJSON(&input); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{
+            "message":  "invalid request body",
+            "error":    err.Error(),
+            "response": nil,
+        })
+        return
+    }
+
+    request, err := h.adminStore.UpdateRegisterRequestByID(id, input.Status)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message":  fmt.Sprintf("failed to update register request by id: %v", err),
+            "response": nil,
+        })
+        return
+    }
+
+    newUser := store.User{
+        UserID:         uuid.New().String(),
+        Username:       request.Username,
+        Email:          request.Email, 
+        Role:           input.Role,
+        Status:         input.UserStatus,
+        HashedPassword: request.HashedPassword,
+        Organization:   input.Organization,
+    }
+
+    err = h.adminStore.CreateUser(&newUser)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "message":  fmt.Sprintf("failed to approve the user: %v", err),
+            "response": nil,
+        })
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "message":  "user approved and created successfully",
+        "response": newUser,
+    })
 }

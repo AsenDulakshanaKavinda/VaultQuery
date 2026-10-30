@@ -44,6 +44,7 @@ func main()  {
 		adminRoutes.GET("/fetch-user-register-req-id/:id", registerRequestHandler.FetchRegisterRequestByID)
 		adminRoutes.GET("/register-requests", registerRequestHandler.FilterRegisterRequestStatus)
 		adminRoutes.PUT("/register-requests-update/:id", registerRequestHandler.UpdateRegisterRequest)
+		adminRoutes.POST("/register-requests/:id/approve", registerRequestHandler.ApproveRegisterRequest)
 	}
 
 

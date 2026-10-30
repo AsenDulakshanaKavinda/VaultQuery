@@ -4,7 +4,7 @@ import "admin-service/internal/store"
 
 type RegisterRequestPayload struct {
 	Username string `json:"Username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,min=8"`
+	HashedPassword string `json:"password" binding:"required,min=8"`
 	Email    string `json:"email" binding:"required"`
 }
 

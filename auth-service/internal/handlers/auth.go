@@ -57,6 +57,53 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 }
 
+// create register request 
+func (h AuthHandler) CreateRegisterRequest(c *gin.Context) {
+	var req models.RegisterRequestPayload
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	hashedPassword, err := services.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process password"})
+		return
+	}
+
+	requestID := uuid.New().String()
+
+	regReq := &store.RegisterRequest{
+		RequestID:      requestID,
+		Username:       req.Username,
+		Email:          req.Email,
+		HashedPassword: hashedPassword,
+		Status:         "pending",
+	}
+
+	if err := h.userStore.CreateRegisterRequest(regReq); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to send register request: %v", err)})
+		return
+	}
+
+	response, err := h.userStore.GetRegisterRequestsByID(requestID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message":  fmt.Sprintf("failed to create user register request: %v", err),
+			"response": nil,
+		})
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message":  "user register request sent successfully",
+		"response": response,
+	})
+
+}
+
+
+
 // Login verifies user credentials and returns a JWT token
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req models.LoginRequest

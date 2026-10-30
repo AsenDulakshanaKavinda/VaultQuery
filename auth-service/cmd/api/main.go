@@ -50,6 +50,7 @@ func main() {
 	{
 		publicRoutes.POST("/register", authHandler.Register)
 		publicRoutes.POST("/login", authHandler.Login)
+		publicRoutes.POST("/create-user-register-req", authHandler.CreateRegisterRequest)
 	}
 
 	// PROTECTED ROUTES (Requires Token)
