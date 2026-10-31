@@ -20,44 +20,7 @@ func NewAuthHandler(userStore *store.UserStore) *AuthHandler {
 	return &AuthHandler{userStore: userStore}
 }
 
-// Register handles user registration
-func (h *AuthHandler) Register(c *gin.Context) {
-	var req models.RegisterRequest
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	hashedPassword, err := services.HashPassword(req.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process password"})
-		return
-	}
-
-	user := &store.User{
-		UserID:         uuid.New().String(),
-		Username:       req.Username,
-		Email:          req.Email,
-		HashedPassword: hashedPassword,
-		// this should be 
-		Role:           req.Role,
-		Organization:   req.Organization,
-	}
-
-	if err := h.userStore.CreateUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register user"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "user registered successfully",
-		"user":    models.ToUserResponse(user),
-	})
-
-}
-
-// create register request 
+// create register request
 func (h AuthHandler) CreateRegisterRequest(c *gin.Context) {
 	var req models.RegisterRequestPayload
 
@@ -101,8 +64,6 @@ func (h AuthHandler) CreateRegisterRequest(c *gin.Context) {
 	})
 
 }
-
-
 
 // Login verifies user credentials and returns a JWT token
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -173,11 +134,52 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 	}
 
 	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.UserID, user.Username, user.Email, user.Role)
-	
 
 	// return user profile
 	c.JSON(http.StatusOK, gin.H{
 		"user": models.ToUserResponse(user),
-
 	})
+}
+
+
+
+
+
+
+
+// Register handles user registration
+func (h *AuthHandler) Register(c *gin.Context) {
+	var req models.RegisterRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	hashedPassword, err := services.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process password"})
+		return
+	}
+
+	user := &store.User{
+		UserID:         uuid.New().String(),
+		Username:       req.Username,
+		Email:          req.Email,
+		HashedPassword: hashedPassword,
+		// this should be
+		Role:         req.Role,
+		Organization: req.Organization,
+	}
+
+	if err := h.userStore.CreateUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register user"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "user registered successfully",
+		"user":    models.ToUserResponse(user),
+	})
+
 }

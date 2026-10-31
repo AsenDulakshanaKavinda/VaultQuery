@@ -7,6 +7,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+// RegisterRequest represents a user registration request.
 type RegisterRequest struct {
 	RequestID      string `json:"req_id"`
 	Username       string `json:"Username"`
@@ -17,6 +18,7 @@ type RegisterRequest struct {
 	UpdatedAt      string `json:"updated_at"`
 }
 
+// User represents a user in the system.
 type User struct {
 	UserID         string `json:"user_id"`
 	Username       string `json:"username"`
@@ -28,8 +30,6 @@ type User struct {
 	CreatedAt      string `json:"created_at"`
 }
 
-
-
 type AdminStore struct {
 	db *sql.DB
 }
@@ -38,27 +38,29 @@ func NewAdminStore(db *sql.DB) *AdminStore {
 	return &AdminStore{db: db}
 }
 
+// CreateRegisterRequest inserts a new register request into the database.
 func (s *AdminStore) CreateRegisterRequest(r *RegisterRequest) error {
-    query := `
+	query := `
         INSERT INTO register_request (req_id, username, email, hashed_password, status, requested_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         RETURNING requested_at, updated_at;`
 
-    err := s.db.QueryRow(
-        query,
-        r.RequestID,
-        r.Username,
-        r.Email,
-        r.HashedPassword,
-        r.Status,
-    ).Scan(&r.RequestedAt, &r.UpdatedAt)
+	err := s.db.QueryRow(
+		query,
+		r.RequestID,
+		r.Username,
+		r.Email,
+		r.HashedPassword,
+		r.Status,
+	).Scan(&r.RequestedAt, &r.UpdatedAt)
 
-    if err != nil {
-        return fmt.Errorf("failed to create register request: %w", err)
-    }
-    return nil
+	if err != nil {
+		return fmt.Errorf("failed to create register request: %w", err)
+	}
+	return nil
 }
 
+// GetAllRegisterRequests retrieves all register requests from the database.
 func (s *AdminStore) GetAllRegisterRequests() ([]*RegisterRequest, error) {
 	query := `SELECT req_id, Username, email, hashed_password, status, requested_at, updated_at FROM register_request`
 
@@ -83,6 +85,7 @@ func (s *AdminStore) GetAllRegisterRequests() ([]*RegisterRequest, error) {
 	return requests, nil
 }
 
+// FilterRegisterRequestsByStatus retrieves register requests filtered by their status.
 func (s *AdminStore) FilterRegisterRequestsByStatus(status string) ([]*RegisterRequest, error) {
 	query := `SELECT req_id, username, email, hashed_password, status, requested_at, updated_at FROM register_request WHERE status = $1`
 
@@ -109,6 +112,7 @@ func (s *AdminStore) FilterRegisterRequestsByStatus(status string) ([]*RegisterR
 
 }
 
+// GetRegisterRequestsByID retrieves a register request by its ID.
 func (s *AdminStore) GetRegisterRequestsByID(requestID string) (*RegisterRequest, error) {
 	query := `SELECT req_id, Username, email, hashed_password, status, requested_at, updated_at FROM register_request WHERE req_id = $1`
 
@@ -132,6 +136,7 @@ func (s *AdminStore) GetRegisterRequestsByID(requestID string) (*RegisterRequest
 	return &r, nil
 }
 
+// UpdateRegisterRequestByID updates the status of a register request by its ID and returns the updated request.
 func (s *AdminStore) UpdateRegisterRequestByID(id string, status string) (*RegisterRequest, error) {
 	query := `
         UPDATE register_request 
@@ -158,7 +163,7 @@ func (s *AdminStore) UpdateRegisterRequestByID(id string, status string) (*Regis
 	return &req, nil
 }
 
-// CreateUser inserts a new user
+// create a new user in the users table after approving the register request
 func (s *AdminStore) CreateUser(u *User) error {
 	query := `
 		INSERT INTO users (user_id, username, email, role, hashed_password, organization)

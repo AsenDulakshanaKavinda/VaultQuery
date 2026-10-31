@@ -7,11 +7,14 @@ import (
 	"time"
 )
 
+// This package provides a singleton database connection to a PostgreSQL database using the provided connection string.
+// It ensures that only one instance of the database connection is created and reused throughout the application.
 var (
 	instance *sql.DB
 	once     sync.Once
 )
 
+// GetDB establishes a connection to the PostgreSQL database using the provided connection string.
 func GetDB(connStr string) (*sql.DB, error) {
 	var err error
 

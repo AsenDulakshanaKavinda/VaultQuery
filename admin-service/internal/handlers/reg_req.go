@@ -18,7 +18,7 @@ func NewRegisterRequestHandler(adminStore *store.AdminStore) *RegisterRequestHan
 	return &RegisterRequestHandler{adminStore: adminStore}
 }
 
-// create register request 
+// CreateRegisterRequest handles the creation of a new user registration request.
 func (h RegisterRequestHandler) CreateRegisterRequest(c *gin.Context) {
 	var req models.RegisterRequestPayload
 
@@ -58,7 +58,7 @@ func (h RegisterRequestHandler) CreateRegisterRequest(c *gin.Context) {
 
 }
 
-// fetch all register request 
+// FetchAllRegisterRequest handles fetching all user registration requests.
 func (h RegisterRequestHandler) FetchAllRegisterRequest(c *gin.Context) {
 	response, err := h.adminStore.GetAllRegisterRequests()
 	if err != nil {
@@ -79,7 +79,7 @@ func (h RegisterRequestHandler) FetchAllRegisterRequest(c *gin.Context) {
 
 
 
-// fetch register request by id
+// FetchRegisterRequestByID handles fetching a user registration request by its ID.
 func (h RegisterRequestHandler) FetchRegisterRequestByID(c *gin.Context) {
 	id := c.Param("id")
 
@@ -99,7 +99,7 @@ func (h RegisterRequestHandler) FetchRegisterRequestByID(c *gin.Context) {
 }
 
 
-// fetch register request by status
+// FilterRegisterRequestStatus handles filtering user registration requests by their status.
 func (h RegisterRequestHandler) FilterRegisterRequestStatus(c *gin.Context) {
 
 	status := c.Query("status")
@@ -132,7 +132,7 @@ type UpdateStatusInput struct {
 	Status string `json:"status" binding:"required"`
 }
 
-// update register request
+// UpdateRegisterRequest handles updating the status of a user registration request.
 func (h RegisterRequestHandler) UpdateRegisterRequest(c *gin.Context) {
 
 	id := c.Param("id")
@@ -179,6 +179,7 @@ type ApproveRequestInput struct {
     Organization string `json:"organization" binding:"required"`
 }
 
+// ApproveRegisterRequest handles approving a user registration request and creating a new user profile.
 func (h RegisterRequestHandler) ApproveRegisterRequest(c *gin.Context) {
     // Get the request ID from the URL path parameter (e.g., /admin/approve/:id)
     id := c.Param("id")

@@ -40,11 +40,19 @@ func main()  {
 	adminRoutes := r.Group("/api/v1/admin")
 	{
 		adminRoutes.POST("/create-user-register-req", registerRequestHandler.CreateRegisterRequest)
-		adminRoutes.GET("/fetch-all-user-register-req", registerRequestHandler.FetchAllRegisterRequest)
-		adminRoutes.GET("/fetch-user-register-req-id/:id", registerRequestHandler.FetchRegisterRequestByID)
-		adminRoutes.GET("/register-requests", registerRequestHandler.FilterRegisterRequestStatus)
 		adminRoutes.PUT("/register-requests-update/:id", registerRequestHandler.UpdateRegisterRequest)
-		adminRoutes.POST("/register-requests/:id/approve", registerRequestHandler.ApproveRegisterRequest)
+
+		// fetch all register request endpoint
+		adminRoutes.GET("/fetch-all-user-register-req", registerRequestHandler.FetchAllRegisterRequest)
+
+		// fetch register request by id endpoint
+		adminRoutes.GET("/fetch-user-register-req-id/:id", registerRequestHandler.FetchRegisterRequestByID)
+
+		// fetch register request by status endpoint
+		adminRoutes.GET("/register-requests", registerRequestHandler.FilterRegisterRequestStatus)
+
+		// approve register request endpoint
+		adminRoutes.PUT("/register-requests/:id/approve", registerRequestHandler.ApproveRegisterRequest)
 	}
 
 
