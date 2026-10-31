@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.162.0",
     "huggingface-hub[cli]>=2.3.0",
     "jira>=3.10.5",
     "minio>=7.2.20",
@@ -21,6 +22,7 @@ dependencies = [
     "slack-sdk>=3.45.0",
     "structlog>=26.1.0",
     "tiktoken>=0.14.0",
+    "uvicorn>=0.54.0",
 ]
 
 [project.scripts]
