@@ -1,6 +1,5 @@
 package models
 
-import "admin-service/internal/store"
 
 type RegisterRequestPayload struct {
 	Username string `json:"Username" binding:"required,min=3,max=50"`
@@ -18,14 +17,3 @@ type RegisterRequestResponse struct {
 	UpdatedAt      string `json:"updated_at"`
 }
 
-func ToRegisterRequestResponse(u *store.RegisterRequest) RegisterRequestResponse {
-	return RegisterRequestResponse{
-		RequestID:      u.RequestID,
-		Username:       u.Username,
-		Email:          u.Email,
-		HashedPassword: u.HashedPassword,
-		Status:         u.Status,
-		RequestedAt:    u.RequestedAt,
-		UpdatedAt:      u.UpdatedAt,
-	}
-}

@@ -20,14 +20,17 @@ type RegisterRequest struct {
 
 // User represents a user in the system.
 type User struct {
-	UserID         string `json:"user_id"`
-	Username       string `json:"username"`
-	Email          string `json:"email"`
-	Role           string `json:"role"`
-	Status         string `json:"status"` // 'active', 'inactive'
-	HashedPassword string `json:"hashed_password"`
-	Organization   string `json:"organization"`
-	CreatedAt      string `json:"created_at"`
+	ID           string `json:"id"`
+	Email        string `json:"email"`
+	Name         string `json:"name"`
+	PasswordHash string `json:"password_hash"`
+	Status       string `json:"status"` // pending | active | disabled
+	Role         string `json:"role"`   // employee | admin
+	Groups       string `json:"groups"`
+	Title        string `json:"title"` // grp_account_managers
+	Location     string `json:"location"`
+	Organization string `json:"organization"`
+	CreatedAt    string `json:"created_at"`
 }
 
 type AdminStore struct {
@@ -163,25 +166,30 @@ func (s *AdminStore) UpdateRegisterRequestByID(id string, status string) (*Regis
 	return &req, nil
 }
 
-// create a new user in the users table after approving the register request
+// CreateUser inserts a new user
+// CreateUser inserts a new user
 func (s *AdminStore) CreateUser(u *User) error {
-	query := `
-		INSERT INTO users (user_id, username, email, role, hashed_password, organization)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING created_at, status;`
+    query := `
+        INSERT INTO users (id, email, name, password_hash, status, role, groups, title, location, organization)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING created_at, status;`
 
-	err := s.db.QueryRow(
-		query,
-		u.UserID,
-		u.Username,
-		u.Email,
-		u.Role,
-		u.HashedPassword,
-		u.Organization,
-	).Scan(&u.CreatedAt, &u.Status)
+    err := s.db.QueryRow(
+        query,
+        u.ID,
+        u.Email,
+        u.Name,
+        u.PasswordHash,
+        u.Status,
+        u.Role,
+        u.Groups,
+        u.Title,
+        u.Location,
+        u.Organization,
+    ).Scan(&u.CreatedAt, &u.Status)
 
-	if err != nil {
-		return fmt.Errorf("failed to create user: %w", err)
-	}
-	return nil
+    if err != nil {
+        return fmt.Errorf("failed to create a new user: %w", err)
+    }
+    return nil
 }

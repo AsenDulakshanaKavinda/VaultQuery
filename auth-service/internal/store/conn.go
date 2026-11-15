@@ -9,17 +9,18 @@ import (
 
 var (
 	instance *sql.DB
-	once sync.Once
-) 
+	once     sync.Once
+)
 
+// create a singleton db connection
 func GetDB(connStr string) (*sql.DB, error) {
 	var err error
 	once.Do(func() {
 		instance, err = sql.Open("postgres", connStr)
 		if err != nil {
-			return 
+			return
 		}
-		
+
 		// Configure connection pool settings
 		instance.SetMaxOpenConns(25)
 		instance.SetMaxIdleConns(25)

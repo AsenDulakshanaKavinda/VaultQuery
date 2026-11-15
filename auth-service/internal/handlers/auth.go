@@ -6,6 +6,7 @@ import (
 	"AuthService/internal/store"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -20,7 +21,8 @@ func NewAuthHandler(userStore *store.UserStore) *AuthHandler {
 	return &AuthHandler{userStore: userStore}
 }
 
-// create register request
+// / create register request
+// / get username, email and password and create a  user register request
 func (h AuthHandler) CreateRegisterRequest(c *gin.Context) {
 	var req models.RegisterRequestPayload
 
@@ -37,7 +39,7 @@ func (h AuthHandler) CreateRegisterRequest(c *gin.Context) {
 
 	requestID := uuid.New().String()
 
-	regReq := &store.RegisterRequest{
+	regReq := &models.RegisterRequest{
 		RequestID:      requestID,
 		Username:       req.Username,
 		Email:          req.Email,
@@ -50,17 +52,8 @@ func (h AuthHandler) CreateRegisterRequest(c *gin.Context) {
 		return
 	}
 
-	response, err := h.userStore.GetRegisterRequestsByID(requestID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message":  fmt.Sprintf("failed to create user register request: %v", err),
-			"response": nil,
-		})
-	}
-
 	c.JSON(http.StatusCreated, gin.H{
-		"message":  "user register request sent successfully",
-		"response": response,
+		"message": "user register request sent successfully",
 	})
 
 }
@@ -76,6 +69,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	user, err := h.userStore.GetUserByEmail(req.Email)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
@@ -85,7 +79,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	if !(services.CheckPasswordHash(req.Password, user.HashedPassword)) {
+	if !(services.CheckPasswordHash(req.Password, user.PasswordHash)) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid username or password"})
 		return
 	}
@@ -96,21 +90,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.UserID, user.Username, user.Email, user.Role)
+	refreshToken, _, err := services.GenerateRefreshToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate refresh token"})
+		return
+	}
+
+	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.ID, user.Name, user.Email, user.Role)
 
 	c.JSON(http.StatusOK, models.TokenResponse{
-		AccessToken: token,
-		TokenType:   "Bearer",
-		ExpiresIn:   expiresIn,
-		User:        models.ToUserResponse(user),
+		AccessToken:  token,
+		RefreshToken: refreshToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    expiresIn,
+		User:         models.ToUserResponse(user),
 	})
-
 }
 
 // GetMe returns the currently authenticated user's details
 func (h *AuthHandler) GetMe(c *gin.Context) {
-	// get user_id set by AuthMiddleware
-	userIDVal, exists := c.Get("user_id")
+	// get id set by AuthMiddleware
+	userIDVal, exists := c.Get("id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
@@ -133,7 +133,7 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.UserID, user.Username, user.Email, user.Role)
+	fmt.Printf("id: %s, name: %s, email: %s, role: %s \n", user.ID, user.Name, user.Email, user.Role)
 
 	// return user profile
 	c.JSON(http.StatusOK, gin.H{
@@ -141,45 +141,107 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 	})
 }
 
+func (h *AuthHandler) PasswordForgot(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "PasswordForgot",
+	})
+}
 
+func (h *AuthHandler) PasswordReset(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"message": "PasswordReset",
+	})
+}
 
+func (h *AuthHandler) Logout(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "authorization header required"})
+		return
+	}
 
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid authorization header format"})
+		return
+	}
 
+	// tokenString := parts[1]
 
+	// TODO: Add tokenString to your Redis/DB blacklist store
+	// err := h.userStore.BlacklistToken(tokenString)
+	// if err != nil { ... }
 
-// Register handles user registration
-func (h *AuthHandler) Register(c *gin.Context) {
-	var req models.RegisterRequest
+	c.JSON(http.StatusOK, gin.H{
+		"message": "logged out successfully",
+	})
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var req RefreshTokenRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid request payload",
+		})
 		return
 	}
 
-	hashedPassword, err := services.HashPassword(req.Password)
+	claims, err := services.ValidateRefreshToken(req.RefreshToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to process password"})
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "invalid or expired refresh token",
+		})
 		return
 	}
 
-	user := &store.User{
-		UserID:         uuid.New().String(),
-		Username:       req.Username,
-		Email:          req.Email,
-		HashedPassword: hashedPassword,
-		// this should be
-		Role:         req.Role,
-		Organization: req.Organization,
-	}
-
-	if err := h.userStore.CreateUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to register user"})
+	user, err := h.userStore.GetUserByID(claims.UserID)
+	if err != nil || user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "user no longer exists",
+			"id":    claims.UserID,
+		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "user registered successfully",
-		"user":    models.ToUserResponse(user),
+	accessToken, expiresIn, err := services.GenerateToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to generate new authentication token",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":           user.ID,
+		"access_token": accessToken,
+		"token_type":   "Bearer",
+		"expires_in":   expiresIn,
 	})
 
+}
+
+func (h *AuthHandler) Verify(c *gin.Context) {
+	userIDVal, exists := c.Get("id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	roleVal, _ := c.Get("role")
+	// emailVal, _ := c.Get("claims")
+
+	c.JSON(http.StatusOK, gin.H{
+		"status": "valid",
+		"id":     userIDVal,
+		"role":   roleVal,
+	})
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Verify",
+	})
 }

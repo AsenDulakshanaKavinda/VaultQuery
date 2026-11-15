@@ -19,6 +19,9 @@ class BaseConnector(Protocol):
 
     async def list_acl(self, source_id: str) -> dict[str, Any]:
         """ Return raw ACL hints/metadata for mapping """
+        ...
+
+    
 
 
 

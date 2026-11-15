@@ -32,6 +32,8 @@ func main()  {
 	adminStore := store.NewAdminStore(dbInstance)
 	registerRequestHandler := handlers.NewRegisterRequestHandler(adminStore)
 
+	// dataOnboardingHandler := handlers.DataOnboardingHandler()
+
 
 	r := gin.Default()
 
@@ -53,7 +55,15 @@ func main()  {
 
 		// approve register request endpoint
 		adminRoutes.PUT("/register-requests/:id/approve", registerRequestHandler.ApproveRegisterRequest)
+
 	}
+
+	// ---- data onboarding endpoints ----
+
+	// ---- ACL Update ----
+
+	// ---- Dashboard ----
+
 
 
 	log.Printf("%s running on :8085\n", cfg.App)

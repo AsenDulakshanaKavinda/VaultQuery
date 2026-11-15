@@ -36,6 +36,8 @@ class Secrets(BaseSettings):
 
     hf_token_read: str | None = None
 
+    qdrant_url: str | None = None
+
 
 class AppConfig(BaseModel):
     name: str

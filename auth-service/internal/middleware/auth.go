@@ -8,19 +8,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// RequireRole restricts access to users who login.
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "authorization header required",
+			})
 			c.Abort()
-			return 
+			return
 		}
 
 		// Header format: "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid authorization header format",
+			})
 			c.Abort()
 			return
 		}
@@ -28,20 +33,22 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Parse and validate token
 		claims, err := services.ValidateToken(parts[1])
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "invalid or expired token",
+			})
 			c.Abort()
 			return
 		}
 
 		// Store user claims in context for downstream handlers
-		c.Set("user_id", claims.UserID)
+		c.Set("id", claims.UserID)
 		c.Set("role", claims.Role)
+		c.Set("groups", claims.Groups)
 		c.Set("claims", claims)
 
 		c.Next()
 	}
 }
-
 
 // RequireRole restricts access to users who possess at least one of the allowed roles.
 func RequireRole(allowedRoles ...string) gin.HandlerFunc {
@@ -49,14 +56,18 @@ func RequireRole(allowedRoles ...string) gin.HandlerFunc {
 		// get role set by AuthMiddleware
 		roleInterface, exists := c.Get("role")
 		if !exists {
-			c.JSON(http.StatusForbidden, gin.H{"error": "role information missing"})
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "role information missing",
+			})
 			c.Abort()
 			return
 		}
 
 		userRole, ok := roleInterface.(string)
 		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid role context type"})
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "invalid role context type",
+			})
 			c.Abort()
 			return
 		}
@@ -70,7 +81,9 @@ func RequireRole(allowedRoles ...string) gin.HandlerFunc {
 		}
 
 		// User does not have the required permission
-		c.JSON(http.StatusForbidden, gin.H{"error": "access denied: insufficient permissions"})
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "access denied: insufficient permissions",
+		})
 		c.Abort()
 	}
 }
