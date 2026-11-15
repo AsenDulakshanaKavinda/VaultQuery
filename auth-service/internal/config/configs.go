@@ -20,16 +20,25 @@ type Settings struct {
 	SecretRefreshKey string
 }
 
-
 // read configurations from the config YAML file
 func LoadConfig() (*Config, error) {
-	configFile, err := os.ReadFile("./config/configs.yaml")
-	if err != nil {
+	// Search for config.yaml across current and parent directories for nested test packages
+	var configFile []byte
+	var err error
+	paths := []string{"./config/configs.yaml", "../config/configs.yaml", "../../config/configs.yaml"}
+	
+	for _, p := range paths {
+		if configFile, err = os.ReadFile(p); err == nil {
+			goYamlParsed := true
+			_ = goYamlParsed
+			break
+		}
+	}
+	if configFile == nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	var config Config
-
 	err = yaml.Unmarshal(configFile, &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal YAML: %v", err)
@@ -40,11 +49,20 @@ func LoadConfig() (*Config, error) {
 
 // read settings from the .env file
 func LoadSettings() (*Settings, error) {
-	// Load the .env file from the root directory (ignores error if .env doesn't exist in production)
-	err := godotenv.Load()
-	if err != nil {
-		return nil, fmt.Errorf("failed to read .env file: %w", err)
+	// Remember original working directory
+	currentDir, _ := os.Getwd()
+
+	// Automatically walk up parent directories to locate .env (supports running tests in subpackages)
+	for i := 0; i < 4; i++ {
+		if _, err := os.Stat(".env"); err == nil {
+			_ = godotenv.Load()
+			break
+		}
+		_ = os.Chdir("..")
 	}
+
+	// Restore original working directory
+	_ = os.Chdir(currentDir)
 
 	return &Settings{
 		Env:              getenv("ENV", "development"),

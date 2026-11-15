@@ -85,7 +85,7 @@ func ValidateToken(tokenString string) (*models.CustomClaims, error) {
 	return claims, nil
 }
 
-var refreshJwtSecret = []byte(getRefreshSecret())
+// var refreshJwtSecret = []byte(getRefreshSecret())
 
 func getRefreshSecret() string {
 	settings, err := config.LoadSettings()
@@ -103,6 +103,7 @@ func GenerateRefreshToken(user *models.User) (string, int64, error) {
 	// Set a longer expiration time, for example: 7 days
 	expirationTime := time.Now().Add(7 * 24 * time.Hour)
 	expiresInSeconds := int64(7 * 24 * 60 * 60)
+	refreshJwtSecret := []byte(getRefreshSecret())
 
 	claims := &models.CustomClaims{
 		UserID:       user.ID,
@@ -133,6 +134,7 @@ func ValidateRefreshToken(tokenString string) (*models.CustomClaims, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
+		refreshJwtSecret := []byte(getRefreshSecret())
 		return refreshJwtSecret, nil // Crucial: uses the refresh secret instead of the access secret
 	})
 
