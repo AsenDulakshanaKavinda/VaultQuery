@@ -72,7 +72,7 @@ func main() {
 	r := SetupRouter(dbInstance)
 
 	fmt.Println("==========================================")
-	fmt.Println("<<< Hello, Welcome to the Auth-Service >>>")
+	fmt.Println("<<<    Welcome to the Auth-Service     >>>")
 	fmt.Println("==========================================")
 	fmt.Printf("%s Running on :%s\n", cfg.App, settings.Port)
 

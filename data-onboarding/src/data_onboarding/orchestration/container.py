@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from data_onboarding.core import get_settings
 from data_onboarding.connectors.base import BaseConnector
-# from data_onboarding.connectors.s3_connector import S3Connector
 from data_onboarding.connectors.s3 import S3Connector
 from data_onboarding.acl.mapper import AclMapper
 from data_onboarding.chunkers.token_chunker import TokenChunker
@@ -82,7 +81,7 @@ def get_smart_pipeline(source_system: str) -> SmartIngestionPipeline:
     vector_store = QdrantVectorStore(client=get_qdrant_client(), collection_name="vtl_knowledge")
     vector_store.bootstrap_collection()
 
-    
+
     # state_store = PostgresStateStore(session_factory=get_session_factory())
     state_store = PostgresStateStore(settings.secrets.async_database_url)
 
