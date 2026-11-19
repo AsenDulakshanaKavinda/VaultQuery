@@ -2,7 +2,7 @@ from collections.abc import AsyncIterable
 from datetime import datetime
 from typing import Any
 
-from minio import Minio
+from minio import Minio, S3Error
 
 from data_onboarding.connectors.base import BaseConnector
 from data_onboarding.core import get_settings
@@ -10,6 +10,8 @@ from data_onboarding.observability import log
 
 settings = get_settings()
 
+class SourceNotFoundError(Exception):
+    """Raised when a source object no longer exists in the connector."""
 
 class MinIOClient:
     """A singleton client for interacting with MinIO"""
@@ -55,13 +57,25 @@ class S3Connector(BaseConnector):
 
     async def fetch(self, source_id: str) -> tuple[bytes, dict[str, Any]]:
         ''' Download raw binary content and metadata hints (e.g. {"path": ...}). '''
-        response = self.client.get_object(self.bucket_name, source_id)
-        data = response.read()
-        response.close()
-        response.release_conn()
 
-        hints = {"path": f"/{self.bucket_name}/{source_id}"}
-        return data, hints
+        try:
+            response = self.client.get_object(self.bucket_name, source_id)
+            try:
+                data = response.read()
+                response.close()
+                response.release_conn()
+
+                hints = {"path": f"/{self.bucket_name}/{source_id}"}
+                return data, hints
+            finally:
+                response.close()
+                response.release_conn()
+        except S3Error as exc:
+            if exc.code in {"NoSuchKey", "NoSuchObject"}:
+                raise SourceNotFoundError(
+                    f"Object '{source_id}' not found in bucket '{self.bucket_name}'"
+                ) from exc
+            raise
 
 
     async def list_acl(self, source_id: str) -> dict[str, Any]:

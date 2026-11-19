@@ -38,6 +38,12 @@ class Secrets(BaseSettings):
 
     qdrant_url: str | None = None
 
+    async_database_url: str | None = None
+
+    s3_bucket_name: str | None = None
+
+
+
 
 class AppConfig(BaseModel):
     name: str
@@ -60,3 +66,6 @@ def get_settings() -> Settings:
     """
     app = AppConfig(**_yaml(ROOT / "config" / "settings.yaml"))
     return Settings(secrets=Secrets(), app=app)
+
+from pathlib import Path
+

@@ -1,4 +1,4 @@
-from data_onboarding.pipeline.ingest_pipeline import IngestionPipeline
+from data_onboarding.pipeline.ingest_pipeline import SmartIngestionPipeline
 
-__all__ = ["IngestionPipeline"]
+__all__ = ["SmartIngestionPipeline"]
 

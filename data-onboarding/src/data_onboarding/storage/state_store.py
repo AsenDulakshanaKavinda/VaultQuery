@@ -168,7 +168,7 @@ class PostgresStateStore:
 
                 upsert_stmt = stmt.on_conflict_do_update(
                     index_elements=["source_system", "source_id"],
-                    set_dict={
+                    set_={
                         "content_hash": stmt.excluded.content_hash,
                         "acl_groups_hash": stmt.excluded.acl_groups_hash,
                         "last_synced_at": stmt.excluded.last_synced_at,
@@ -185,7 +185,8 @@ class PostgresStateStore:
 
     async def get_all_source_ids(self, source_system: str) -> list[str]:
         """returns all source_ids currently registered in the state store for a given system"""
-        async with self.session_factory() as session:
+        db = await Database.get_instance(self.db_url)
+        async with db.session_factory() as session:
             stmt = select(DocumentState.source_id).where(
                 DocumentState.source_system == source_system
             )
@@ -197,7 +198,8 @@ class PostgresStateStore:
         if not source_ids:
             return
 
-        async with self.session_factory() as session:
+        db = await Database.get_instance(self.db_url)
+        async with db.session_factory() as session:
             async with session.begin():
                 stmt = delete(DocumentState).where(
                     DocumentState.source_system == source_system,

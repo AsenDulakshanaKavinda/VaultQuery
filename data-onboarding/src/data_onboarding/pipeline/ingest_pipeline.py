@@ -1,12 +1,18 @@
+import hashlib
+
 from data_onboarding.acl.mapper import AclMapper
 from data_onboarding.chunkers.token_chunker import TokenChunker
 from data_onboarding.connectors.base import BaseConnector
+from data_onboarding.connectors.s3 import SourceNotFoundError
 from data_onboarding.domain.ids import make_doc_id
 from data_onboarding.embedding.providers import LocalSentenceTransformerEmbedder
 from data_onboarding.processing.parsers.layout_parser import LayoutParser
 from data_onboarding.storage.qdrant_store import QdrantVectorStore
+from data_onboarding.storage.state_store import PostgresStateStore
 
+from data_onboarding.observability.logging import log
 
+"""
 class IngestionPipeline:
     def __init__(
         self,
@@ -61,7 +67,7 @@ class IngestionPipeline:
             }
 
             self.vector_store.upsert_chunks(chunks, vectors, payload_template)
-
+"""
 
 class SmartIngestionPipeline:
     """A more intelligent ingestion pipeline that tracks document state and only re-embeds when necessary."""
@@ -83,6 +89,7 @@ class SmartIngestionPipeline:
         self.vector_store = vector_store
         self.state_store = state_store
         self.source_system = source_system_name
+        self.org_id = "test"
 
     async def run_sync(self):
         """Runs the ingestion pipeline in a sync mode, processing all changes and handling deletions."""
@@ -96,8 +103,12 @@ class SmartIngestionPipeline:
 
     async def _process_single_item(self, source_id: str):
         """Processes a single document from the source system, handling state tracking and conditional re-embedding."""
-
-        file_bytes, hints = await self.connector.fetch(source_id)
+        try:
+            file_bytes, hints = await self.connector.fetch(source_id)
+        except SourceNotFoundError:
+            log.warning(f"Skipping document missing from source during sync: {self.source_system}, {source_id}")
+            return
+            
         decision = self.mapper.map(self.source_system, hints)
 
         new_content_hash = hashlib.sha256(file_bytes).hexdigest()

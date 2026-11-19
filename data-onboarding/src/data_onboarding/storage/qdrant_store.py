@@ -1,11 +1,13 @@
-from qdrant_client import QdrantClient, models
+from qdrant_client import QdrantClient
+from qdrant_client import models
+
 
 
 class QdrantVectorStore:
     def __init__(self, client: QdrantClient, collection_name: str = "vtl_knowledge"):
         self.client = client
         self.collection_name = collection_name
-        self.collection = self.bootstrap_collection()
+        # self.collection = self.bootstrap_collection()
 
     def bootstrap_collection(self, vector_size: int = 384):
         """responsible for creating QdrantClient the collection if it doesn't exist yet"""
@@ -43,3 +45,27 @@ class QdrantVectorStore:
                 )
             )
         self.client.upsert(collection_name=self.collection_name, points=points)
+
+    def delete_points_by_source_ids(
+        self, orphaned_ids: list[str]
+    ):
+        """Deletes all Qdrant points matching any of the given orphaned source_ids."""
+        if not orphaned_ids:
+            return
+
+        point_selector = models.FilterSelector(
+            filter=models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="source_id",
+                        match=models.MatchAny(any=orphaned_ids),
+                    )
+                ]
+            )
+        )
+
+        self.client.delete(
+            collection_name=self.collection_name,
+            points_selector=point_selector,
+            wait=True,
+        )
