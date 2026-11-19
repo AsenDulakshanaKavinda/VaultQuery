@@ -1,25 +1,34 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "./pages/Login.jsx";
-import SignUp from "./pages/SignUp.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import React from 'react';
+import './styles/globals.css'
+import { ThemeProvider } from './theme/ThemeContext';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { Route, Routes } from 'react-router-dom';
+import { PasswordReset } from './components/auth/PasswordReset';
+import { RequestAccess } from './components/auth/RequestAccess';
+
 
 export default function App() {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ThemeProvider>
+      <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        {
+        /*<SidebarLeft />
+        <AnswerWorkspace />
+        */}
+
+        
+
+        <Routes>
+          <Route path='/' element={<LoginScreen />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
+          <Route path="/request-access" element={<RequestAccess />} />
+        </Routes>
+      </div>
+    </ThemeProvider>
+    
+
+    
+
+    
   );
 }

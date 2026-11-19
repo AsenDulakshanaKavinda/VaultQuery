@@ -1,0 +1,37 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  # auth service
+  - name: auth-service
+    url: http://auth-service:9000
+    routers:
+    - name: auth-router
+      paths:
+        - /api/
+      strip_path: true
+
+  # admin service
+  - name: admin-service
+    url: http://admin-service:9000
+    routers:
+    - name: admin-router
+      paths:
+        - /api/
+      strip_path: true
+
+  # data onboarding service
+  - name: data-onboarding
+    url: http://data-onboarding:9000
+    routers: 
+    - name: admin-router
+      paths:
+        - /api/
+      strip_path: true
+
+
+
+
+
+
+

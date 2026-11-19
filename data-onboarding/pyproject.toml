@@ -1,0 +1,40 @@
+[project]
+name = "data-onboarding"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "AsenDulakshnaKavinda", email = "s22010362@ousl.lk" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "huggingface-hub[cli]>=2.3.0",
+    "jira>=3.10.5",
+    "minio>=7.2.20",
+    "office365-rest-python-client>=3.3.0",
+    "pydantic-settings>=2.16.1",
+    "pymupdf>=2.0",
+    "python-docx>=1.2.0",
+    "pyyaml>=6.0.3",
+    "qdrant-client>=1.20.0",
+    "sentence-transformers>=6.2.0",
+    "slack-sdk>=3.45.0",
+    "structlog>=26.1.0",
+    "temporalio>=1.35.0",
+    "tiktoken>=0.14.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+data-onboarding = "data_onboarding:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
