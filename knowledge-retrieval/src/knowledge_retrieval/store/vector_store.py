@@ -1,6 +1,10 @@
 from qdrant_client import QdrantClient
 from qdrant_client import models
+from functools import lru_cache
 
+from knowledge_retrieval.core import get_settings
+
+settings = get_settings()
 
 class QdrantVectorStore:
     def __init__(self, client: QdrantClient, collection_name: str = "vtl_knowledge"):
@@ -24,4 +28,6 @@ class QdrantVectorStore:
                 field_schema=models.PayloadSchemaType.KEYWORD,
             )
 
-    
+@lru_cache(max_size=1)
+def get_qdrant_client() -> QdrantClient:
+    return QdrantClient(url=settings.secrets.qdrant_url)    

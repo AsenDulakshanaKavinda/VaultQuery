@@ -17,6 +17,16 @@ class Secrets(BaseSettings):
     env: Literal["local", "staging", "prod"]
     log_level: str = "INFO"
 
+    qdrant_url: str | None = None
+
+    dence_model: str | None = None
+    reranker_model: str | None = None
+    sparse_model: str | None = None
+
+    collection_name: str | None = None
+
+    local_files_only: bool = True
+
 
 class AppConfig(BaseModel):
     name: str
