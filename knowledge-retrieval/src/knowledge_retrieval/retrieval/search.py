@@ -82,7 +82,7 @@ class HybridRetrievalEngine:
         stored_model = payload.get("model_name")
         if (
             stored_model
-            and stored_model != self.settings.dense_model_name
+            and stored_model != self.settings.secrets.dence_model
             and stored_model not in warned_models
         ):
             warned_models.add(stored_model)
@@ -91,7 +91,7 @@ class HybridRetrievalEngine:
                 "chunk was indexed with '%s', but active query model is '%s' "
                 "(org_id=%s, doc_id=%s). Cosine similarity scores may be degraded.",
                 stored_model,
-                self.settings.dense_model_name,
+                self.settings.secrets.dence_model,
                 payload.get("org_id"),
                 payload.get("doc_id"),
             )
@@ -197,6 +197,7 @@ class HybridRetrievalEngine:
         scored_chunks.sort(key=lambda c: c.confidence, reverse=True)
         final_chunks = scored_chunks[: req.top_k]
         t_stage2 = time.perf_counter()
+        
 
         return SearchResponse(
             query=req.query,
@@ -212,7 +213,8 @@ class HybridRetrievalEngine:
         )
 
 
-
+def get_hybrid_retrieval_engine():
+    return HybridRetrievalEngine()
 
 
 

@@ -18,6 +18,8 @@ dependencies = [
     "structlog>=26.1.0",
     "uvicorn>=0.54.0",
     "sentence-transformers>=6.2.0",
+    "langgraph-checkpoint-postgres>=3.2.1",
+
 ]
 
 [project.scripts]
@@ -26,3 +28,9 @@ knowledge-retrieval = "knowledge_retrieval:main"
 [build-system]
 requires = ["uv_build>=0.12.9,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+]

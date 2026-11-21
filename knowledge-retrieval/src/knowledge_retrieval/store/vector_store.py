@@ -28,6 +28,6 @@ class QdrantVectorStore:
                 field_schema=models.PayloadSchemaType.KEYWORD,
             )
 
-@lru_cache(max_size=1)
+@lru_cache(maxsize=1)
 def get_qdrant_client() -> QdrantClient:
     return QdrantClient(url=settings.secrets.qdrant_url)    
